@@ -1,5 +1,6 @@
 package main;
 
+import commands.SlashCommandManager;
 import constants.ENV;
 import lombok.Getter;
 import me.duncte123.botcommons.web.WebUtils;
@@ -59,6 +60,10 @@ public class Supportify {
                     )
                     .setGatewayEncoding(GatewayEncoding.ETF)
                     .setActivity(Activity.playing("Starting up..."));
+
+            SlashCommandManager slashCommandManager = new SlashCommandManager();
+            slashCommandManager.getCommands().forEach(jdaBuilder::addEventListeners);
+            slashCommandManager.getDevCommands().forEach(jdaBuilder::addEventListeners);
 
             api = jdaBuilder.build();
 
