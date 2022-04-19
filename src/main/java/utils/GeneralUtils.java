@@ -500,7 +500,7 @@ public class GeneralUtils {
         final var sb = new StringBuilder();
         for (int i = 0; i < mentions.size(); i++) {
             var elem = mentions.get(i);
-            sb.append("<"+mentionTag+"").append(elem.toString()).append(">")
+            sb.append("<").append(mentionTag).append(elem.toString()).append(">")
                     .append(i != mentions.size() - 1 ? ", " : "");
         }
         return sb.isEmpty() ? "Nothing is here" :  sb.toString();
