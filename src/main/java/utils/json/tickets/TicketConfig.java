@@ -4,6 +4,7 @@ import commands.general.tickets.TicketCommand;
 import lombok.SneakyThrows;
 import main.Supportify;
 import net.dv8tion.jda.api.entities.Emoji;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -324,11 +325,20 @@ public class TicketConfig extends AbstractGuildConfig {
         return isSupportRole(role.getGuild().getIdLong(), role.getIdLong());
     }
 
+    @SneakyThrows
     public boolean isSupportMember(long gid, long uid) {
-        return isSupportMember(Supportify.getApi().getGuildById(gid).retrieveMemberById(uid).complete());
+        if (getSupportRole(gid) == -1L)
+            return false;
+
+        Guild guild = Supportify.getApi().getGuildById(gid);
+        Member member = guild.retrieveMemberById(uid).submit().get();
+        return isSupportMember(member);
     }
 
     public boolean isSupportMember(Member member) {
+        if (getSupportRole(member.getGuild().getIdLong()) == -1L)
+            return false;
+
         for (final var role : member.getRoles())
             if (isSupportRole(role))
                 return true;
@@ -398,8 +408,11 @@ public class TicketConfig extends AbstractGuildConfig {
             default -> throw new UnexpectedException("Unexpected error");
         }
 
+        if (!isSupportMember(gid, uid))
+            throw new NullPointerException("This user isn't a support member");
+
         if (!isSupportMemberInArr(gid, uid))
-            throw new IllegalArgumentException("This user doesn't have information in the database!");
+            addSupportMember(gid, uid);
 
         final var obj = getGuildObject(gid);
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
@@ -460,7 +473,7 @@ public class TicketConfig extends AbstractGuildConfig {
         getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
-    private enum SupportStat {
+    public enum SupportStat {
         CLOSES,
         MESSAGES
     }

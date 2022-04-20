@@ -1,6 +1,7 @@
 package main;
 
 import commands.SlashCommandManager;
+import commands.general.tickets.events.CloseEvent;
 import constants.ENV;
 import lombok.Getter;
 import me.duncte123.botcommons.web.WebUtils;
@@ -41,7 +42,8 @@ public class Supportify {
                     .setChunkingFilter(ChunkingFilter.NONE)
                     .setMemberCachePolicy(MemberCachePolicy.NONE)
                     .addEventListeners(
-                        new Listener()
+                            new Listener(),
+                            new CloseEvent()
                     )
                     .disableCache(
                             CacheFlag.VOICE_STATE,

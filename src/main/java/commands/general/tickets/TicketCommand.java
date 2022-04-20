@@ -328,9 +328,9 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                 )
                 .queue(channel -> channel.sendMessage(user.getAsMention())
                         .setEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", config.getTicketMessageDescription(guild.getIdLong()).replaceAll("\\\\n", "\\n")).build())
-                        .setActionRow(Button.of(ButtonStyle.DANGER, CLOSE_BUTTON_ID + ":" + channel.getIdLong(), "Close ticket", Emoji.fromUnicode("🔒")))
+                        .setActionRow(Button.of(ButtonStyle.DANGER, CLOSE_BUTTON_ID, "Close ticket", Emoji.fromUnicode("🔒")))
                         .queue(message -> {
-//                            config.openTicket(guildID, channel.getIdLong(), user.getIdLong());
+                            config.openTicket(guildID, channel.getIdLong(), user.getIdLong());
                             event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "I've created a ticket for you in: " + channel.getAsMention()).build())
                                     .setEphemeral(true)
                                     .queue();
