@@ -1,6 +1,6 @@
 package commands;
 
-import commands.general.TicketCommand;
+import commands.general.tickets.TicketCommand;
 import lombok.Getter;
 import utils.component.interactions.AbstractSlashCommand;
 

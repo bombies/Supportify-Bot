@@ -1,7 +1,7 @@
 package main;
 
 import commands.CommandManager;
-import commands.general.TicketCommand;
+import commands.general.tickets.TicketCommand;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;

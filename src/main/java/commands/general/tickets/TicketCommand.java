@@ -1,4 +1,4 @@
-package commands.general;
+package commands.general.tickets;
 
 import commands.CommandContext;
 import commands.ICommand;

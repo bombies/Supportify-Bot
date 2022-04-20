@@ -1,9 +1,8 @@
 package utils.json.tickets;
 
-import commands.general.TicketCommand;
+import commands.general.tickets.TicketCommand;
 import lombok.SneakyThrows;
 import main.Supportify;
-import me.duncte123.botcommons.messaging.EmbedUtils;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
