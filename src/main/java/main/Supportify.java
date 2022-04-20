@@ -41,7 +41,7 @@ public class Supportify {
                     .setChunkingFilter(ChunkingFilter.NONE)
                     .setMemberCachePolicy(MemberCachePolicy.NONE)
                     .addEventListeners(
-
+                        new Listener()
                     )
                     .disableCache(
                             CacheFlag.VOICE_STATE,
