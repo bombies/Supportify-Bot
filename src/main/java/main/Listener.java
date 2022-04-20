@@ -1,9 +1,12 @@
 package main;
 
+import commands.general.TicketCommand;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -12,6 +15,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utils.component.interactions.AbstractSlashCommand;
+import utils.json.guildconfig.GuildConfig;
 
 public class Listener extends ListenerAdapter {
     private final static Logger logger = LoggerFactory.getLogger(Listener.class);
@@ -71,27 +76,31 @@ public class Listener extends ListenerAdapter {
         }
     }
 
+
+
     @Override
-    public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
+    public void onGuildJoin(@NotNull GuildJoinEvent event) {
         final var guild = event.getGuild();
         loadSlashCommands(guild);
 
+        new GuildConfig().addGuild(guild.getIdLong());
         logger.info("Joined {}", guild.getName());
     }
 
     @Override
-    public void onGuildVoiceLeave(@NotNull GuildVoiceLeaveEvent event) {
+    public void onGuildLeave(@NotNull GuildLeaveEvent event) {
         final var guild = event.getGuild();
 
+        new GuildConfig().removeGuild(guild.getIdLong());
         logger.info("Left {}", guild.getName());
     }
 
     public void loadSlashCommands(Guild g) {
-
+        AbstractSlashCommand.loadAllCommands(g);
     }
 
     public void loadNeededSlashCommands(Guild g) {
-
+        new TicketCommand().loadCommand(g);
     }
 
     public void unloadCommands(Guild g) {

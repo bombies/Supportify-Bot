@@ -1,5 +1,6 @@
 package commands;
 
+import commands.general.TicketCommand;
 import lombok.Getter;
 import utils.component.interactions.AbstractSlashCommand;
 
@@ -15,7 +16,7 @@ public class SlashCommandManager {
 
     public SlashCommandManager() {
         addGeneralCommands(
-
+            new TicketCommand()
         );
 
         addDevCommands(

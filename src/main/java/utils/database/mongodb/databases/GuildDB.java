@@ -54,6 +54,7 @@ public class GuildDB extends AbstractMongoDatabase {
                         .put(Field.Tickets.OPENED_TICKETS.toString(), new JSONArray())
                         .put(Field.Tickets.TOTAL_COUNT.toString(), 0)
                         .put(Field.Tickets.SUPPORT_TEAM_INFO.toString(), new JSONArray())
+                        .put(Field.Tickets.BLACKLISTED_USERS.toString(), new JSONArray())
                 )
                 .addField(Field.PrivateChannels.PRIVATE_VOICE_CHANNELS, new JSONObject()
                         .put(Field.PrivateChannels.VC_CREATOR.toString(), -1L)
@@ -72,6 +73,7 @@ public class GuildDB extends AbstractMongoDatabase {
 
         public enum Tickets implements GuildField {
             INFO("ticket_info"),
+            CREATOR_CATEGORY("ticket_creator_category"),
             CREATOR_CHANNEL("ticket_creator_channel"),
             CREATOR_MESSAGE("ticket_creator_message"),
             CREATOR_MESSAGE_DESCRIPTION("ticket_creator_message_description"),
@@ -88,7 +90,8 @@ public class GuildDB extends AbstractMongoDatabase {
             SUPPORT_TEAM_INFO("support_team_info"),
             SUPPORT_USER_ID("user_id"),
             SUPPORT_CLOSES("num_of_closes"),
-            SUPPORT_MESSAGES("num_of_messages");
+            SUPPORT_MESSAGES("num_of_messages"),
+            BLACKLISTED_USERS("blacklisted_users");
 
             private final String str;
 

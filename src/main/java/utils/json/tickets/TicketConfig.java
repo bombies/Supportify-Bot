@@ -1,9 +1,14 @@
 package utils.json.tickets;
 
+import commands.general.TicketCommand;
 import lombok.SneakyThrows;
 import main.Supportify;
+import me.duncte123.botcommons.messaging.EmbedUtils;
+import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.json.JSONObject;
 import utils.database.mongodb.databases.GuildDB;
 import utils.json.AbstractGuildConfig;
@@ -14,13 +19,14 @@ import java.util.List;
 
 public class TicketConfig extends AbstractGuildConfig {
 
-    public void createCreator(long gid, long cid, long mid, String description, String emoji) {
+    public void createCreator(long gid, long categoryId, long cid, long mid, String description, String emoji) {
         if (creatorExists(gid))
             throw new IllegalStateException("This guild already has a ticket creator!");
 
         final var obj = getGuildObject(gid);
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
 
+        ticketObj.put(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString(), categoryId);
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_CHANNEL.toString(), cid);
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE.toString(), mid);
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_DESCRIPTION.toString(), description);
@@ -44,6 +50,18 @@ public class TicketConfig extends AbstractGuildConfig {
         getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
     }
 
+    public void removeCreatorCategory(long gid) {
+        if (!creatorCategoryExists(gid))
+            throw new IllegalStateException("This guild already doesn't have a ticket creator category!");
+
+        final var obj = getGuildObject(gid);
+        final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
+
+        ticketObj.put(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString(), -1L);
+
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+    }
+
     public TicketCreator getCreator(long gid) {
         if (!creatorExists(gid))
             throw new IllegalStateException("This guild doesn't have a ticket creator!");
@@ -53,6 +71,7 @@ public class TicketConfig extends AbstractGuildConfig {
 
         return new TicketCreator(
                 gid,
+                ticketObj.getLong(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString()),
                 ticketObj.getLong(GuildDB.Field.Tickets.CREATOR_CHANNEL.toString()),
                 ticketObj.getLong(GuildDB.Field.Tickets.CREATOR_MESSAGE.toString()),
                 ticketObj.getString(GuildDB.Field.Tickets.CREATOR_MESSAGE_DESCRIPTION.toString()),
@@ -82,6 +101,21 @@ public class TicketConfig extends AbstractGuildConfig {
         getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
     }
 
+    public void updateCreator(long gid) {
+        if (!creatorExists(gid))
+            return;
+
+        TicketCreator creator = getCreator(gid);
+        Supportify.getApi().getGuildById(gid)
+                .getTextChannelById(creator.getChannelID())
+                .retrieveMessageById(creator.getMessageID())
+                .queue(message -> {
+                    message.editMessageEmbeds(EmbedUtils.embedMessageWithTitle("Tickets", creator.getMessageDescription()).build())
+                            .setActionRow(Button.of(ButtonStyle.PRIMARY, TicketCommand.CLOSE_BUTTON_ID, "",  Emoji.fromUnicode(creator.getEmoji())))
+                            .queue();
+                });
+    }
+
     public boolean creatorExists(long gid) {
         if (!guildHasInfo(gid))
             return false;
@@ -89,6 +123,28 @@ public class TicketConfig extends AbstractGuildConfig {
         return getGuildObject(gid)
                 .getJSONObject(GuildDB.Field.Tickets.INFO.toString())
                 .getLong(GuildDB.Field.Tickets.CREATOR_CHANNEL.toString()) != -1;
+    }
+
+    public boolean creatorCategoryExists(long gid) {
+        if (!guildHasInfo(gid))
+            return false;
+
+        return getGuildObject(gid)
+                .getJSONObject(GuildDB.Field.Tickets.INFO.toString())
+                .getLong(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString()) != -1;
+    }
+
+    public void setTicketMessageDescription(long gid, String description) {
+        final var obj = getGuildObject(gid);
+        final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
+        ticketObj.put(GuildDB.Field.Tickets.MESSAGE_DESCRIPTION.toString(), description);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+    }
+
+    public String getTicketMessageDescription(long gid) {
+        final var obj = getGuildObject(gid);
+        final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
+        return ticketObj.getString(GuildDB.Field.Tickets.MESSAGE_DESCRIPTION.toString());
     }
 
     public int getTicketCount(long gid) {
@@ -340,6 +396,37 @@ public class TicketConfig extends AbstractGuildConfig {
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
         final var supportTeamArr = ticketObj.getJSONArray(GuildDB.Field.Tickets.SUPPORT_TEAM_INFO.toString());
         return arrayHasObject(supportTeamArr, GuildDB.Field.Tickets.SUPPORT_USER_ID, uid);
+    }
+
+    public void blackListUser(long gid, long uid) {
+        if (isBlackListed(gid, uid))
+            throw new IllegalStateException("This user is already blacklisted!");
+
+        final var obj = getGuildObject(gid);
+        final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
+        final var blackListedArr = ticketObj.getJSONArray(GuildDB.Field.Tickets.BLACKLISTED_USERS.toString());
+        blackListedArr.put(uid);
+
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+    }
+
+    public void unBlackListUser(long gid, long uid) {
+        if (!isBlackListed(gid, uid))
+            throw new IllegalStateException("This user is not blacklisted!");
+
+        final var obj = getGuildObject(gid);
+        final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
+        final var blackListedArr = ticketObj.getJSONArray(GuildDB.Field.Tickets.BLACKLISTED_USERS.toString());
+        blackListedArr.remove(getIndexOfObjectInArray(blackListedArr, uid));
+
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+    }
+
+    public boolean isBlackListed(Long gid, long uid) {
+        final var obj = getGuildObject(gid);
+        final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
+        final var blackListedArr = ticketObj.getJSONArray(GuildDB.Field.Tickets.BLACKLISTED_USERS.toString());
+        return arrayHasObject(blackListedArr, uid);
     }
 
     @Override
