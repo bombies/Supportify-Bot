@@ -226,7 +226,8 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
     protected boolean checks(SlashCommandInteractionEvent event) {
         if (!nameCheck(event)) return false;
         if (!botEmbedCheck(event)) return false;
-        return botPermsCheck(event);
+        if (!botPermsCheck(event)) return false;
+        return predicateCheck(event);
     }
 
     protected boolean nameCheck(SlashCommandInteractionEvent event) {
@@ -240,7 +241,12 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
             buildCommand();
         if (command.getCheckPermission() == null)
             return true;
-        return command.getCheckPermission().test(event);
+        boolean res = command.getCheckPermission().test(event);
+        if (!res)
+            event.replyEmbeds(SupportifyEmbedUtils.embedMessage("You do not have enough permissions to run this command!").build())
+                    .setEphemeral(true)
+                    .queue();
+        return res;
     }
 
     protected boolean botPermsCheck(SlashCommandInteractionEvent event) {
