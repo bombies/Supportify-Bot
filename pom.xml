@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.github.xirado</groupId>
             <artifactId>JDA</artifactId>
-            <version>b37020f</version>
+            <version>4.2.1</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
