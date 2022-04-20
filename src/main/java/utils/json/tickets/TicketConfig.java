@@ -9,7 +9,9 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import org.json.JSONException;
 import org.json.JSONObject;
+import utils.SupportifyEmbedUtils;
 import utils.database.mongodb.databases.GuildDB;
 import utils.json.AbstractGuildConfig;
 
@@ -32,7 +34,7 @@ public class TicketConfig extends AbstractGuildConfig {
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_DESCRIPTION.toString(), description);
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_EMOJI.toString(), emoji);
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public void removeCreator(long gid) {
@@ -47,7 +49,7 @@ public class TicketConfig extends AbstractGuildConfig {
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_DESCRIPTION.toString(), "");
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_EMOJI.toString(), "");
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public void removeCreatorCategory(long gid) {
@@ -58,8 +60,21 @@ public class TicketConfig extends AbstractGuildConfig {
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
 
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString(), -1L);
+        ticketObj.put(GuildDB.Field.Tickets.CREATOR_CHANNEL.toString(), -1L);
+        ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE.toString(), -1L);
+        ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_DESCRIPTION.toString(), "");
+        ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_EMOJI.toString(), "");
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
+    }
+
+    public long getTicketCreatorCategory(long gid) {
+        if (!creatorCategoryExists(gid))
+            throw new IllegalStateException("There is no creator category!");
+
+        final var obj = getGuildObject(gid);
+        final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
+        return ticketObj.getLong(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString());
     }
 
     public TicketCreator getCreator(long gid) {
@@ -87,7 +102,7 @@ public class TicketConfig extends AbstractGuildConfig {
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
 
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_DESCRIPTION.toString(), description);
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public void setCreatorEmoji(long gid, String emoji) {
@@ -98,7 +113,7 @@ public class TicketConfig extends AbstractGuildConfig {
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
 
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_EMOJI.toString(), emoji);
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public void updateCreator(long gid) {
@@ -110,8 +125,8 @@ public class TicketConfig extends AbstractGuildConfig {
                 .getTextChannelById(creator.getChannelID())
                 .retrieveMessageById(creator.getMessageID())
                 .queue(message -> {
-                    message.editMessageEmbeds(EmbedUtils.embedMessageWithTitle("Tickets", creator.getMessageDescription()).build())
-                            .setActionRow(Button.of(ButtonStyle.PRIMARY, TicketCommand.CLOSE_BUTTON_ID, "",  Emoji.fromUnicode(creator.getEmoji())))
+                    message.editMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", creator.getMessageDescription()).build())
+                            .setActionRow(Button.of(ButtonStyle.PRIMARY, TicketCommand.CREATOR_BUTTON_ID, "",  Emoji.fromUnicode(creator.getEmoji())))
                             .queue();
                 });
     }
@@ -128,17 +143,23 @@ public class TicketConfig extends AbstractGuildConfig {
     public boolean creatorCategoryExists(long gid) {
         if (!guildHasInfo(gid))
             return false;
-
-        return getGuildObject(gid)
-                .getJSONObject(GuildDB.Field.Tickets.INFO.toString())
-                .getLong(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString()) != -1;
+        try {
+            return getGuildObject(gid)
+                    .getJSONObject(GuildDB.Field.Tickets.INFO.toString())
+                    .getLong(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString()) != -1;
+        } catch (JSONException e) {
+            update(gid);
+            return getGuildObject(gid)
+                    .getJSONObject(GuildDB.Field.Tickets.INFO.toString())
+                    .getLong(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString()) != -1;
+        }
     }
 
     public void setTicketMessageDescription(long gid, String description) {
         final var obj = getGuildObject(gid);
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
         ticketObj.put(GuildDB.Field.Tickets.MESSAGE_DESCRIPTION.toString(), description);
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public String getTicketMessageDescription(long gid) {
@@ -159,7 +180,7 @@ public class TicketConfig extends AbstractGuildConfig {
         int count = ticketObj.getInt(GuildDB.Field.Tickets.TOTAL_COUNT.toString());
 
         ticketObj.put(GuildDB.Field.Tickets.TOTAL_COUNT.toString(), ++count);
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     private int incrementAndGetTicketCount(long gid) {
@@ -168,7 +189,7 @@ public class TicketConfig extends AbstractGuildConfig {
         int count = ticketObj.getInt(GuildDB.Field.Tickets.TOTAL_COUNT.toString());
 
         ticketObj.put(GuildDB.Field.Tickets.TOTAL_COUNT.toString(), ++count);
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
 
         return count;
     }
@@ -185,7 +206,7 @@ public class TicketConfig extends AbstractGuildConfig {
                 .put(GuildDB.Field.Tickets.CHANNEL.toString(), cid)
         );
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public void closeTicket(long gid, long cid) {
@@ -198,7 +219,7 @@ public class TicketConfig extends AbstractGuildConfig {
 
         openedTickets.remove(getIndexOfObjectInArray(openedTickets, GuildDB.Field.Tickets.CHANNEL, cid));
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public void closeTicket(Ticket ticket) {
@@ -287,7 +308,7 @@ public class TicketConfig extends AbstractGuildConfig {
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
         ticketObj.put(GuildDB.Field.Tickets.SUPPORT_ROLE.toString(), rid);
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public long getSupportRole(long gid) {
@@ -320,7 +341,7 @@ public class TicketConfig extends AbstractGuildConfig {
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
         ticketObj.put(GuildDB.Field.Tickets.LOG_CHANNEL.toString(), cid);
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public long getLogChannel(long gid, long cid) {
@@ -345,7 +366,7 @@ public class TicketConfig extends AbstractGuildConfig {
                 .put(GuildDB.Field.Tickets.SUPPORT_MESSAGES.toString(), 0)
         );
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public SupportTeamMember getSupportMember(long gid, long uid) {
@@ -388,7 +409,7 @@ public class TicketConfig extends AbstractGuildConfig {
         JSONObject memberObj = supportTeamArr.getJSONObject(getIndexOfObjectInArray(supportTeamArr, GuildDB.Field.Tickets.SUPPORT_USER_ID, uid));
 
         memberObj.put(field.toString(), memberObj.getInt(field.toString()) + step);
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     private boolean isSupportMemberInArr(long gid, long uid) {
@@ -407,7 +428,7 @@ public class TicketConfig extends AbstractGuildConfig {
         final var blackListedArr = ticketObj.getJSONArray(GuildDB.Field.Tickets.BLACKLISTED_USERS.toString());
         blackListedArr.put(uid);
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public void unBlackListUser(long gid, long uid) {
@@ -419,7 +440,7 @@ public class TicketConfig extends AbstractGuildConfig {
         final var blackListedArr = ticketObj.getJSONArray(GuildDB.Field.Tickets.BLACKLISTED_USERS.toString());
         blackListedArr.remove(getIndexOfObjectInArray(blackListedArr, uid));
 
-        getCache().setField(gid, GuildDB.Field.Tickets.INFO, obj);
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     public boolean isBlackListed(Long gid, long uid) {
@@ -431,7 +452,13 @@ public class TicketConfig extends AbstractGuildConfig {
 
     @Override
     public void update(long gid) {
-
+        JSONObject guildObject = getGuildObject(gid);
+        final var ticketObj = guildObject.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
+        
+        if (!ticketObj.has(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString()))
+            ticketObj.put(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString(), -1L);
+        
+        getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
     private enum SupportStat {

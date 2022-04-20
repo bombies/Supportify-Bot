@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import org.jetbrains.annotations.NotNull;
 import utils.GeneralUtils;
+import utils.SupportifyEmbedUtils;
 import utils.component.AbstractInteraction;
 import utils.component.InvalidBuilderException;
 
@@ -42,12 +43,6 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
         if (command == null)
             buildCommand();
         return command.description;
-    }
-
-    public boolean isDevCommand() {
-        if (command == null)
-            buildCommand();
-        return command.isPrivate;
     }
 
     public List<SubCommand> getSubCommands() {
@@ -116,8 +111,6 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
             }
         }
 
-        if (command.isPrivate)
-            commandData.setDefaultEnabled(false);
         return commandData;
     }
 
@@ -166,16 +159,7 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
             }
         }
 
-        if (command.isPrivate && g.getOwnerIdLong() != Config.getOwnerID())
-            return;
-        else
-            commandCreateAction = commandCreateAction.setDefaultEnabled(false);
-
-        commandCreateAction.queueAfter(1, TimeUnit.SECONDS, createdCommand -> {
-            if (!command.isPrivate) return;
-            createdCommand.updatePrivileges(g, CommandPrivilege.enableUser(Config.getOwnerID()))
-                    .queue();
-        }, new ErrorHandler()
+        commandCreateAction.queueAfter(1, TimeUnit.SECONDS, null, new ErrorHandler()
                 .handle(ErrorResponse.MISSING_ACCESS, e -> {}));
     }
 
@@ -220,7 +204,7 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
                 }, new ErrorHandler().handle(ErrorResponse.fromCode(30034), e -> g.retrieveOwner().queue(
                         owner -> owner.getUser()
                                 .openPrivateChannel().queue(channel -> {
-                                    channel.sendMessageEmbeds(EmbedUtils.embedMessage("Hey, I could not create slash commands in **"+g.getName()+"**" +
+                                    channel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessage("Hey, I could not create slash commands in **"+g.getName()+"**" +
                                                     " due to being re-invited too many times. Try inviting me again tomorrow to fix this issue.").build())
                                             .queue(null, new ErrorHandler()
                                                     .handle(ErrorResponse.CANNOT_SEND_TO_USER, ex2 -> {}));
@@ -268,7 +252,7 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
         final Guild guild = event.getGuild();
         final var self = guild.getSelfMember();
         if (!self.hasPermission(command.botRequiredPermissions)) {
-            event.replyEmbeds(EmbedUtils.embedMessage("I do not have enough permissions to do this\n" +
+            event.replyEmbeds(SupportifyEmbedUtils.embedMessage("I do not have enough permissions to do this\n" +
                             "Please give my role the following permission(s):\n\n" +
                             "`"+GeneralUtils.listToString(command.botRequiredPermissions)+"`\n\n" +
                             "*For the recommended permissions please invite the bot by clicking the button below*").build())
@@ -322,19 +306,16 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
         @Nullable
         @Getter
         private final Predicate<SlashCommandInteractionEvent> checkPermission;
-        @Getter
-        private final boolean isPrivate;
 
         private Command(@NotNull String name, @Nullable String description, @NotNull List<CommandOption> options,
                         @NotNull List<SubCommandGroup> subCommandGroups, @NotNull List<SubCommand> subCommands, @Nullable Predicate<SlashCommandInteractionEvent> checkPermission,
-                        boolean isPrivate, List<net.dv8tion.jda.api.Permission> botRequiredPermissions) {
+                        List<net.dv8tion.jda.api.Permission> botRequiredPermissions) {
             this.name = name.toLowerCase();
             this.description = description;
             this.options = options;
             this.subCommandGroups = subCommandGroups;
             this.subCommands = subCommands;
             this.checkPermission = checkPermission;
-            this.isPrivate = isPrivate;
             this.botRequiredPermissions = botRequiredPermissions;
         }
 
@@ -516,7 +497,6 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
                     subCommandGroups,
                     subCommands,
                     permissionCheck,
-                    isPrivate,
                     botRequiredPermissions
             );
         }

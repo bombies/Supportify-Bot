@@ -65,8 +65,6 @@ public class Supportify {
             slashCommandManager.getCommands().forEach(jdaBuilder::addEventListeners);
             slashCommandManager.getDevCommands().forEach(jdaBuilder::addEventListeners);
 
-            api = jdaBuilder.build();
-
             AbstractMongoDatabase.initAllCaches();
             logger.info("Initialized all caches");
 
@@ -74,6 +72,8 @@ public class Supportify {
             logger.info("All guilds have been loaded into cache");
 
             GeneralUtils.setDefaultEmbed();
+
+            api = jdaBuilder.build();
         } catch (Exception e) {
             logger.error("An unexpected error occurred!", e);
         }

@@ -347,7 +347,7 @@ public class GeneralUtils {
     }
 
     public static void setDefaultEmbed() {
-        EmbedUtils.setEmbedBuilder(
+        SupportifyEmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
                         .setColor(EMBED_COLOR)
                         .setAuthor(BotConstants.EMBED_TITLE.toString(), null, BotConstants.EMBED_LOGO.toString())
@@ -355,14 +355,14 @@ public class GeneralUtils {
     }
 
     public static void setCustomEmbed(Color color) {
-        EmbedUtils.setEmbedBuilder(
+        SupportifyEmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
                         .setColor(color)
         );
     }
 
     public static void setCustomEmbed(String author, Color color) {
-        EmbedUtils.setEmbedBuilder(
+        SupportifyEmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
                         .setColor(color)
                         .setAuthor(author, null, BotConstants.EMBED_LOGO.toString())
@@ -370,7 +370,7 @@ public class GeneralUtils {
     }
 
     public static void setCustomEmbed(String author) {
-        EmbedUtils.setEmbedBuilder(
+        SupportifyEmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
                         .setColor(EMBED_COLOR)
                         .setAuthor(author, null, BotConstants.EMBED_LOGO.toString())
@@ -378,7 +378,7 @@ public class GeneralUtils {
     }
 
     public static void setCustomEmbed(String author, String footer) {
-        EmbedUtils.setEmbedBuilder(
+        SupportifyEmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
                         .setColor(EMBED_COLOR)
                         .setAuthor(author,null, BotConstants.EMBED_LOGO.toString())
@@ -387,7 +387,7 @@ public class GeneralUtils {
     }
 
     public static void setCustomEmbed(String author, @Nullable String title, String footer) {
-        EmbedUtils.setEmbedBuilder(
+        SupportifyEmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
                         .setAuthor(author, null, BotConstants.EMBED_LOGO.toString())
                         .setColor(EMBED_COLOR)
@@ -397,7 +397,7 @@ public class GeneralUtils {
     }
 
     public static void setCustomEmbed(String title, Color color, String footer) {
-        EmbedUtils.setEmbedBuilder(
+        SupportifyEmbedUtils.setEmbedBuilder(
                 () -> new EmbedBuilder()
                         .setColor(color)
                         .setTitle(title)

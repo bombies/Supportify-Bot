@@ -2,19 +2,25 @@ package commands.general;
 
 import commands.CommandContext;
 import commands.ICommand;
+import main.Supportify;
 import me.duncte123.botcommons.messaging.EmbedUtils;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import org.jetbrains.annotations.NotNull;
 import utils.GeneralUtils;
+import utils.SupportifyEmbedUtils;
 import utils.component.interactions.AbstractSlashCommand;
 import utils.json.tickets.TicketConfig;
+import utils.json.tickets.TicketCreator;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class TicketCommand extends AbstractSlashCommand implements ICommand {
@@ -139,7 +145,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
         String[] commandPath = event.getCommandPath().split("/");
         final Guild guild = event.getGuild();
 
-        switch (commandPath[0]) {
+        switch (commandPath[1]) {
             case "setup" -> event.replyEmbeds(handleSetup(guild)).setEphemeral(true).queue();
             case "blacklist" -> {
                 User user = event.getOption("user").getAsUser();
@@ -150,7 +156,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                 event.replyEmbeds(handleUnBlacklist(guild, user.getIdLong())).queue();
             }
             case "set" -> {
-                switch (commandPath[1]) {
+                switch (commandPath[2]) {
                     case "creatormessage" -> {
                         String desc = event.getOption("desc").getAsString();
                         event.replyEmbeds(setCreatorMessage(guild, desc)).setEphemeral(true).queue();
@@ -171,33 +177,22 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
     private MessageEmbed handleSetup(Guild guild) {
         final var config = new TicketConfig();
         final var guildID = guild.getIdLong();
-        final var creator = config.getCreator(guildID);
 
-        if (creator.getChannelID() != 1L)
-            return EmbedUtils.embedMessageWithTitle("Tickets", "Tickets have already been setup!").build();
+        if (config.creatorExists(guildID))
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Tickets have already been setup!").build();
 
         final var description = "Click the button below to create a ticket!";
         final var emoji = "📥";
 
-        if (creator.getCategoryID() == -1L)
-            guild.createCategory("TICKETS").queue(category -> {
-               guild.createTextChannel("tickets", category).queue(channel -> {
-                   channel.sendMessageEmbeds(EmbedUtils.embedMessageWithTitle("Tickets", description).build())
-                           .setActionRow(Button.of(ButtonStyle.PRIMARY, CREATOR_BUTTON_ID, "", Emoji.fromUnicode(emoji)))
-                           .queue(message -> {
-                               config.createCreator(
-                                       guildID,
-                                       category.getIdLong(),
-                                       channel.getIdLong(),
-                                       message.getIdLong(),
-                                       description,
-                                       emoji
-                               );
-                           });
-               });
-            });
+        if (!config.creatorCategoryExists(guildID))
+            guild.createCategory("TICKETS")
+                    .queue(category -> createCreatorChannel(guild, category, config, description, emoji));
+        else {
+            Category category = guild.getCategoryById(config.getTicketCreatorCategory(guildID));
+            createCreatorChannel(guild, category, config, description, emoji);
+        }
 
-        if (config.getSupportRole(guildID) != -1L) {
+        if (config.getSupportRole(guildID) == -1L) {
             guild.createRole()
                     .setName("Support Staff")
                     .setColor(GeneralUtils.parseColor("#00FFBE"))
@@ -205,7 +200,27 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                     .queue(role -> config.setSupportRole(guildID, role.getIdLong()));
         }
 
-        return EmbedUtils.embedMessageWithTitle("Tickets", "Successfully setup your ticket system!").build();
+        config.setTicketMessageDescription(guildID, "Welcome to your ticket!" +
+                "\nPlease be patient as a support team member will be available shortly to assist you.");
+
+        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Successfully setup your ticket system!").build();
+    }
+
+    private void createCreatorChannel(Guild guild, Category category, TicketConfig config, String description, String emoji) {
+        guild.createTextChannel("tickets", category).queue(channel -> {
+            channel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", description).build())
+                    .setActionRow(Button.of(ButtonStyle.PRIMARY, CREATOR_BUTTON_ID, "", Emoji.fromUnicode(emoji)))
+                    .queue(message -> {
+                        config.createCreator(
+                                guild.getIdLong(),
+                                category.getIdLong(),
+                                channel.getIdLong(),
+                                message.getIdLong(),
+                                description,
+                                emoji
+                        );
+                    });
+        });
     }
 
     private MessageEmbed handleBlacklist(Guild guild, long uid) {
@@ -213,10 +228,10 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
         final var guildID = guild.getIdLong();
 
         if (config.isBlackListed(guildID, uid))
-            return EmbedUtils.embedMessageWithTitle("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " is already blacklisted!").build();
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " is already blacklisted!").build();
 
         config.blackListUser(guildID, uid);
-        return EmbedUtils.embedMessageWithTitle("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " has been blacklisted!").build();
+        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " has been blacklisted!").build();
     }
 
     private MessageEmbed handleUnBlacklist(Guild guild, long uid) {
@@ -224,41 +239,57 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
         final var guildID = guild.getIdLong();
 
         if (!config.isBlackListed(guildID, uid))
-            return EmbedUtils.embedMessageWithTitle("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " isn't blacklisted!").build();
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " isn't blacklisted!").build();
 
         config.unBlackListUser(guildID, uid);
-        return EmbedUtils.embedMessageWithTitle("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " has been un-blacklisted!").build();
+        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " has been un-blacklisted!").build();
     }
 
     private MessageEmbed setCreatorMessage(Guild guild, String message) {
         final var config = new TicketConfig();
+
+        if (!config.creatorExists(guild.getIdLong()))
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The ticket creator hasn't been setup!" +
+                    "\nPlease setup tickets by running the `setup` command.").build();
+
         config.setCreatorDescription(guild.getIdLong(), message);
         config.updateCreator(guild.getIdLong());
-        return EmbedUtils.embedMessageWithTitle("Tickets", "You have set the creator description to:\n\n" + message).build();
+        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "You have set the creator description to:\n\n" + message).build();
     }
 
     private MessageEmbed setCreatorEmoji(Guild guild, String emoji) {
         final var config = new TicketConfig();
 
+        if (!config.creatorExists(guild.getIdLong()))
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The ticket creator hasn't been setup!" +
+                    "\nPlease setup tickets by running the `setup` command.").build();
+
+        TicketCreator creator = config.getCreator(guild.getIdLong());
+        Message msg = Supportify.getApi().getGuildById(guild.getIdLong())
+                .getTextChannelById(creator.getChannelID())
+                .retrieveMessageById(creator.getMessageID())
+                .complete();
+
         try {
-            Emoji.fromUnicode(emoji);
+            msg.editMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", creator.getMessageDescription()).build())
+                    .setActionRow(Button.of(ButtonStyle.PRIMARY, CREATOR_BUTTON_ID, "", Emoji.fromUnicode(emoji)))
+                    .complete();
         } catch (Exception e) {
-            return EmbedUtils.embedMessageWithTitle("Tickets", "`` isn't a valid emoji!").build();
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Invalid emoji!").build();
         }
 
         config.setCreatorEmoji(guild.getIdLong(), emoji);
-        config.updateCreator(guild.getIdLong());
-        return EmbedUtils.embedMessageWithTitle("Tickets", "You have set the creator button emoji to: " + emoji).build();
+        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "You have set the creator button emoji to: " + emoji).build();
     }
 
     private MessageEmbed setSupportRole(Guild guild, Role role) {
         if (role == null)
-            return EmbedUtils.embedMessageWithTitle("Tickets", "Invalid role!").build();
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Invalid role!").build();
 
         final var config = new TicketConfig();
 
         config.setSupportRole(guild.getIdLong(), role.getIdLong());
-        return EmbedUtils.embedMessageWithTitle("Tickets", "The support role has been set to: " + role.getAsMention()).build();
+        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The support role has been set to: " + role.getAsMention()).build();
     }
 
     @Override
@@ -271,7 +302,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
         final var guildID = guild.getIdLong();
 
         if (config.isBlackListed(guildID, event.getUser().getIdLong())) {
-            event.replyEmbeds(EmbedUtils.embedMessage("You have been blacklisted from making tickets!").build())
+            event.replyEmbeds(SupportifyEmbedUtils.embedMessage("You have been blacklisted from making tickets!").build())
                     .setEphemeral(true).queue();
             return;
         }
@@ -296,14 +327,19 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                         List.of(Permission.MESSAGE_MANAGE, Permission.CREATE_INSTANT_INVITE)
                 )
                 .queue(channel -> channel.sendMessage(user.getAsMention())
-                        .setEmbeds(EmbedUtils.embedMessageWithTitle("Tickets", config.getTicketMessageDescription(guild.getIdLong()).replaceAll("\\\\n", "\\n")).build())
+                        .setEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", config.getTicketMessageDescription(guild.getIdLong()).replaceAll("\\\\n", "\\n")).build())
                         .setActionRow(Button.of(ButtonStyle.DANGER, CLOSE_BUTTON_ID + ":" + channel.getIdLong(), "Close ticket", Emoji.fromUnicode("🔒")))
                         .queue(message -> {
-                            config.openTicket(guildID, channel.getIdLong(), user.getIdLong());
-                            event.replyEmbeds(EmbedUtils.embedMessageWithTitle("Tickets", "I've created a ticket for you in: " + channel.getAsMention()).build())
+//                            config.openTicket(guildID, channel.getIdLong(), user.getIdLong());
+                            event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "I've created a ticket for you in: " + channel.getAsMention()).build())
                                     .setEphemeral(true)
                                     .queue();
-                        }));
+                        }), new ErrorHandler().handle(ErrorResponse.INVALID_FORM_BODY, e -> {
+                            event.replyEmbeds(SupportifyEmbedUtils.embedMessage("There was an issue creating a ticket for you...\n" +
+                                    "Tell an admin to ensure that a support role has been set!").build())
+                                    .setEphemeral(true)
+                                    .queue();
+                }));
     }
 
     private String formatTicketNumber(int num) {

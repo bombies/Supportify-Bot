@@ -44,6 +44,7 @@ public class GuildDB extends AbstractMongoDatabase {
                 .addField(Field.GUILD_ID, gid)
                 .addField(Field.GUILD_PREFIX, Config.get(ENV.DEFAULT_PREFIX))
                 .addField(Field.Tickets.INFO, new JSONObject()
+                        .put(Field.Tickets.CREATOR_CATEGORY.toString(), -1L)
                         .put(Field.Tickets.CREATOR_CHANNEL.toString(), -1L)
                         .put(Field.Tickets.CREATOR_MESSAGE.toString(), -1L)
                         .put(Field.Tickets.CREATOR_MESSAGE_DESCRIPTION.toString(), "")
