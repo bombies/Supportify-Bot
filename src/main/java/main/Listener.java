@@ -40,7 +40,7 @@ public class Listener extends ListenerAdapter {
 
         final var user = event.getAuthor();
         final var guild = event.getGuild();
-        final String prefix = ">"; // TODO Change prefix to be loaded from database
+        final String prefix = new GuildConfig().getPrefix(guild.getIdLong());
 
         final var msg = event.getMessage();
         final var raw = msg.getContentRaw();
