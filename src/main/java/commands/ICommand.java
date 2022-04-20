@@ -2,11 +2,10 @@ package commands;
 
 import net.dv8tion.jda.api.Permission;
 
-import javax.script.ScriptException;
 import java.util.List;
 
 public interface ICommand {
-    void handle(CommandContext ctx) throws ScriptException;
+    void handle(CommandContext ctx);
 
     String getName();
 

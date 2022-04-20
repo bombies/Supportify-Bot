@@ -1,5 +1,6 @@
 package main;
 
+import commands.CommandManager;
 import commands.general.TicketCommand;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -18,6 +19,11 @@ import utils.json.guildconfig.GuildConfig;
 
 public class Listener extends ListenerAdapter {
     private final static Logger logger = LoggerFactory.getLogger(Listener.class);
+    private final CommandManager manager;
+
+    public Listener() {
+        manager = new CommandManager();
+    }
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
@@ -47,7 +53,7 @@ public class Listener extends ListenerAdapter {
 
         if (raw.startsWith(prefix) && raw.length() > prefix.length()) {
             try {
-                // TODO Command Handling
+                manager.handle(event);
             } catch (InsufficientPermissionException e) {
                 try {
                     event.getChannel().sendMessage("""

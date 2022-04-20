@@ -23,7 +23,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
     public static String CLOSE_BUTTON_ID = "tickets:close";
 
     @Override
-    public void handle(CommandContext ctx) throws ScriptException {
+    public void handle(CommandContext ctx) {
 
     }
 
