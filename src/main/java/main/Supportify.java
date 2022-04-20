@@ -15,8 +15,8 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utils.GeneralUtils;
-
-import javax.security.auth.login.LoginException;
+import utils.database.mongodb.AbstractMongoDatabase;
+import utils.database.mongodb.cache.GuildDBCache;
 
 public class Supportify {
     private static final Logger logger = LoggerFactory.getLogger(Supportify.class);
@@ -66,6 +66,12 @@ public class Supportify {
             slashCommandManager.getDevCommands().forEach(jdaBuilder::addEventListeners);
 
             api = jdaBuilder.build();
+
+            AbstractMongoDatabase.initAllCaches();
+            logger.info("Initialized all caches");
+
+            GuildDBCache.getInstance().loadAllGuilds();
+            logger.info("All guilds have been loaded into cache");
 
             GeneralUtils.setDefaultEmbed();
         } catch (Exception e) {
