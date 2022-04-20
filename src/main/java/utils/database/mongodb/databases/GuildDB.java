@@ -43,20 +43,21 @@ public class GuildDB extends AbstractMongoDatabase {
         return DocumentBuilder.create()
                 .addField(Field.GUILD_ID, gid)
                 .addField(Field.GUILD_PREFIX, Config.get(ENV.PREFIX))
-                .addField(Field.TICKET_INFO, new JSONObject()
-                        .put(Field.TICKET_CREATOR_CHANNEL.toString(), -1L)
-                        .put(Field.TICKET_CREATOR_MESSAGE.toString(), -1L)
-                        .put(Field.TICKET_CREATOR_MESSAGE_DESCRIPTION.toString(), "")
-                        .put(Field.TICKET_CREATOR_MESSAGE_EMOJI.toString(), -1L)
-                        .put(Field.TICKET_MESSAGE_DESCRIPTION.toString(), "")
-                        .put(Field.TICKET_SUPPORT_ROLE.toString(), -1L)
-                        .put(Field.OPENED_TICKETS.toString(), new JSONArray())
-                        .put(Field.TICKET_TOTAL_COUNT.toString(), 0)
-                        .put(Field.TICKET_SUPPORT_TEAM_INFO.toString(), new JSONArray())
+                .addField(Field.Tickets.INFO, new JSONObject()
+                        .put(Field.Tickets.CREATOR_CHANNEL.toString(), -1L)
+                        .put(Field.Tickets.CREATOR_MESSAGE.toString(), -1L)
+                        .put(Field.Tickets.CREATOR_MESSAGE_DESCRIPTION.toString(), "")
+                        .put(Field.Tickets.CREATOR_MESSAGE_EMOJI.toString(), -1L)
+                        .put(Field.Tickets.MESSAGE_DESCRIPTION.toString(), "")
+                        .put(Field.Tickets.SUPPORT_ROLE.toString(), -1L)
+                        .put(Field.Tickets.LOG_CHANNEL.toString(), -1L)
+                        .put(Field.Tickets.OPENED_TICKETS.toString(), new JSONArray())
+                        .put(Field.Tickets.TOTAL_COUNT.toString(), 0)
+                        .put(Field.Tickets.SUPPORT_TEAM_INFO.toString(), new JSONArray())
                 )
-                .addField(Field.PRIVATE_VOICE_CHANNELS, new JSONObject()
-                        .put(Field.PVC_VC_CREATOR.toString(), -1L)
-                        .put(Field.PVC_USER_CHANNELS.toString(), new JSONArray())
+                .addField(Field.PrivateChannels.PRIVATE_VOICE_CHANNELS, new JSONObject()
+                        .put(Field.PrivateChannels.VC_CREATOR.toString(), -1L)
+                        .put(Field.PrivateChannels.USER_CHANNELS.toString(), new JSONArray())
                 )
                 .build();
     }
@@ -65,35 +66,60 @@ public class GuildDB extends AbstractMongoDatabase {
         logger.debug("Updating Guild cache");
     }
 
-    public enum Field implements GenericJSONField {
+    public enum Field implements GuildField {
         GUILD_ID("server_id"),
-        GUILD_PREFIX("prefix"),
+        GUILD_PREFIX("prefix");
 
-        // Tickets
-        TICKET_INFO("ticket_info"),
-        TICKET_CREATOR_CHANNEL("ticket_creator_channel"),
-        TICKET_CREATOR_MESSAGE("ticket_creator_message"),
-        TICKET_CREATOR_MESSAGE_DESCRIPTION("ticket_creator_message_description"),
-        TICKET_CREATOR_MESSAGE_EMOJI("ticket_creator_message_emoji"),
-        TICKET_MESSAGE_DESCRIPTION("ticket_message_description"),
-        TICKET_SUPPORT_ROLE("ticket_support_role"),
-        OPENED_TICKETS("opened_tickets"),
-        TICKET_OWNER("ticket_owner"),
-        TICKET_TIME_OPENED("time_opened"),
-        TICKED_ID("ticked_id"),
-        TICKET_CHANNEL("ticket_channel"),
-        TICKET_TOTAL_COUNT("total_ticket_count"),
-        TICKET_SUPPORT_TEAM_INFO("support_team_info"),
-        TICKET_SUPPORT_USER_ID("user_id"),
-        TICKET_SUPPORT_CLOSES("num_of_closes"),
-        TICKET_SUPPORT_MESSAGES("num_of_messages"),
+        public enum Tickets implements GuildField {
+            INFO("ticket_info"),
+            CREATOR_CHANNEL("ticket_creator_channel"),
+            CREATOR_MESSAGE("ticket_creator_message"),
+            CREATOR_MESSAGE_DESCRIPTION("ticket_creator_message_description"),
+            CREATOR_MESSAGE_EMOJI("ticket_creator_message_emoji"),
+            MESSAGE_DESCRIPTION("ticket_message_description"),
+            SUPPORT_ROLE("ticket_support_role"),
+            OPENED_TICKETS("opened_tickets"),
+            OWNER("ticket_owner"),
+            TIME_OPENED("time_opened"),
+            ID("ticked_id"),
+            CHANNEL("ticket_channel"),
+            TOTAL_COUNT("total_ticket_count"),
+            LOG_CHANNEL("log_channel"),
+            SUPPORT_TEAM_INFO("support_team_info"),
+            SUPPORT_USER_ID("user_id"),
+            SUPPORT_CLOSES("num_of_closes"),
+            SUPPORT_MESSAGES("num_of_messages");
 
-        // Private Voice Channels
-        PRIVATE_VOICE_CHANNELS("private_voice_channels"),
-        PVC_VC_CREATOR("vc_creator"),
-        PVC_USER_CHANNELS("user_channel_info"),
-        PVC_CHANNEL_NAME("channel_name"),
-        PVC_WAITING_ROOM_NAME("waiting_room_name");
+            private final String str;
+
+            Tickets(String str) {
+                this.str = str;
+            }
+
+            @Override
+            public String toString() {
+                return str;
+            }
+        }
+
+        public enum PrivateChannels implements GuildField {
+            PRIVATE_VOICE_CHANNELS("private_voice_channels"),
+            VC_CREATOR("vc_creator"),
+            USER_CHANNELS("user_channel_info"),
+            PVC_CHANNEL_NAME("channel_name"),
+            PVC_WAITING_ROOM_NAME("waiting_room_name");
+
+            private final String str;
+
+            PrivateChannels(String str) {
+                this.str = str;
+            }
+
+            @Override
+            public String toString() {
+                return str;
+            }
+        }
 
         private final String str;
 
@@ -106,4 +132,6 @@ public class GuildDB extends AbstractMongoDatabase {
             return str;
         }
     }
+
+    public interface GuildField extends GenericJSONField { }
 }

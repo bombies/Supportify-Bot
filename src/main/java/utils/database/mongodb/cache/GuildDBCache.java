@@ -45,7 +45,7 @@ public class GuildDBCache extends AbstractMongoCache {
         return getGuildInfo(gid).get(field.toString());
     }
 
-    public synchronized void setField(long gid, GuildDB.Field field, Object value) {
+    public synchronized void setField(long gid, GuildDB.GuildField field, Object value) {
         if (!guildHasInfo(gid))
             loadGuild(gid);
 
