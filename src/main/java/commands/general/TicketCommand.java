@@ -15,7 +15,6 @@ import utils.GeneralUtils;
 import utils.component.interactions.AbstractSlashCommand;
 import utils.json.tickets.TicketConfig;
 
-import javax.script.ScriptException;
 import java.util.List;
 
 public class TicketCommand extends AbstractSlashCommand implements ICommand {
