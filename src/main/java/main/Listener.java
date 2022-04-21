@@ -3,7 +3,7 @@ package main;
 import commands.CommandManager;
 import commands.general.tickets.RenameCommand;
 import commands.general.tickets.TicketCommand;
-import commands.general.tickets.events.CloseCommand;
+import commands.general.tickets.CloseCommand;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;

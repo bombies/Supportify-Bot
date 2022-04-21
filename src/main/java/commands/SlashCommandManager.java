@@ -2,7 +2,7 @@ package commands;
 
 import commands.general.tickets.RenameCommand;
 import commands.general.tickets.TicketCommand;
-import commands.general.tickets.events.CloseCommand;
+import commands.general.tickets.CloseCommand;
 import lombok.Getter;
 import utils.component.interactions.AbstractSlashCommand;
 

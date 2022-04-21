@@ -1,4 +1,4 @@
-package commands.general.tickets.events;
+package commands.general.tickets;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
