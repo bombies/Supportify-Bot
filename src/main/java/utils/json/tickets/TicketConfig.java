@@ -349,7 +349,9 @@ public class TicketConfig extends AbstractGuildConfig {
     }
 
     public boolean supportRoleIsSet(long gid) {
-        return getSupportRole(gid) != -1;
+        final var obj = getGuildObject(gid);
+        final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
+        return ticketObj.getLong(GuildDB.Field.Tickets.SUPPORT_ROLE.toString()) != -1L;
     }
 
     public void setLogChannel(long gid, long cid) {

@@ -220,6 +220,10 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
             return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The log channel can't be setup until tickets have been setup!" +
                     "\nRun the `setup` command to setup tickets.").build();
 
+        if (!config.supportRoleIsSet(guild.getIdLong()))
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The log channel can't be setup since a support role doesn't exist!\n" +
+                    "Run the `set supportrole` command to se a support role for this server.").build();
+
         if (config.getLogChannel(guild.getIdLong()) != -1L)
             return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The log channel has already been setup!").build();
 
@@ -229,7 +233,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                         List.of(),
                         List.of(Permission.VIEW_CHANNEL)
                 )
-                .addRolePermissionOverride(config.getLogChannel(guild.getIdLong()),
+                .addRolePermissionOverride(config.getSupportRole(guild.getIdLong()),
                         List.of(Permission.VIEW_CHANNEL),
                         List.of(Permission.MESSAGE_SEND, Permission.MESSAGE_ADD_REACTION, Permission.CREATE_PUBLIC_THREADS, Permission.CREATE_PUBLIC_THREADS)
                 )
