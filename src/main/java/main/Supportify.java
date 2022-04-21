@@ -2,6 +2,7 @@ package main;
 
 import commands.SlashCommandManager;
 import commands.general.tickets.events.CloseEvent;
+import commands.general.tickets.events.TicketCreatorDeletionEvent;
 import commands.general.tickets.events.TicketDeletionEvent;
 import constants.ENV;
 import lombok.Getter;
@@ -45,7 +46,8 @@ public class Supportify {
                     .addEventListeners(
                             new Listener(),
                             new CloseEvent(),
-                            new TicketDeletionEvent()
+                            new TicketDeletionEvent(),
+                            new TicketCreatorDeletionEvent()
                     )
                     .disableCache(
                             CacheFlag.VOICE_STATE,
