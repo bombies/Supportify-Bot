@@ -1,10 +1,7 @@
 package main;
 
 import commands.SlashCommandManager;
-import commands.general.tickets.events.CloseEvent;
-import commands.general.tickets.events.TicketCreatorCategoryDeletionEvent;
-import commands.general.tickets.events.TicketCreatorDeletionEvent;
-import commands.general.tickets.events.TicketDeletionEvent;
+import commands.general.tickets.events.*;
 import constants.ENV;
 import lombok.Getter;
 import me.duncte123.botcommons.web.WebUtils;
@@ -49,7 +46,8 @@ public class Supportify {
                             new CloseEvent(),
                             new TicketDeletionEvent(),
                             new TicketCreatorDeletionEvent(),
-                            new TicketCreatorCategoryDeletionEvent()
+                            new TicketCreatorCategoryDeletionEvent(),
+                            new TicketLogDeletionEvent()
                     )
                     .disableCache(
                             CacheFlag.VOICE_STATE,
