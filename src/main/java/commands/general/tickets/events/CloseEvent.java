@@ -16,7 +16,6 @@ import utils.json.tickets.TicketConfig;
 import utils.json.tickets.TicketLogger;
 
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class CloseEvent extends ListenerAdapter {
     public static final int CLOSE_DELAY = 10;

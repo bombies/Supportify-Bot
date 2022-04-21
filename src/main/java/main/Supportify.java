@@ -2,6 +2,7 @@ package main;
 
 import commands.SlashCommandManager;
 import commands.general.tickets.events.CloseEvent;
+import commands.general.tickets.events.TicketDeletionEvent;
 import constants.ENV;
 import lombok.Getter;
 import me.duncte123.botcommons.web.WebUtils;
@@ -43,7 +44,8 @@ public class Supportify {
                     .setMemberCachePolicy(MemberCachePolicy.NONE)
                     .addEventListeners(
                             new Listener(),
-                            new CloseEvent()
+                            new CloseEvent(),
+                            new TicketDeletionEvent()
                     )
                     .disableCache(
                             CacheFlag.VOICE_STATE,
