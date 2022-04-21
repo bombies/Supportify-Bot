@@ -31,10 +31,12 @@ public class TicketCreatorCategoryDeletionEvent extends ListenerAdapter {
 
         TicketCreator creator = config.getCreator(guild.getIdLong());
         guild.getTextChannelById(creator.getChannelID()).delete().queue();
+        config.removeCreator(event.getGuild().getIdLong());
 
         if (config.getLogChannel(event.getGuild().getIdLong()) == -1L)
             return;
 
         guild.getTextChannelById(config.getLogChannel(event.getGuild().getIdLong())).delete().queue();
+        config.setLogChannel(event.getGuild().getIdLong(), -1L);
     }
 }
