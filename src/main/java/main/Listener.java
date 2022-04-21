@@ -1,6 +1,7 @@
 package main;
 
 import commands.CommandManager;
+import commands.general.tickets.RenameCommand;
 import commands.general.tickets.TicketCommand;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -108,6 +109,7 @@ public class Listener extends ListenerAdapter {
 
     public void loadNeededSlashCommands(Guild g) {
         new TicketCommand().loadCommand(g);
+        new RenameCommand().loadCommand(g);
     }
 
     public void unloadCommands(Guild g) {
