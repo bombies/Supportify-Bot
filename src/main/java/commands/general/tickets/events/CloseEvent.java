@@ -3,9 +3,11 @@ package commands.general.tickets.events;
 import commands.general.tickets.TicketCommand;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
+import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +61,7 @@ public class CloseEvent extends ListenerAdapter {
 
         config.closeTicket(guild.getIdLong(), channel.getIdLong());
         event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "This ticket has been closed by: " + closer.getAsMention() + "\n" +
-                "This channel will be deleted in " + CLOSE_DELAY + " seconds...").build())
+                        "This channel will be deleted in " + CLOSE_DELAY + " seconds...").build())
                 .queue(success -> {
                     channel.delete().queueAfter(CLOSE_DELAY, TimeUnit.SECONDS);
 
@@ -71,7 +73,7 @@ public class CloseEvent extends ListenerAdapter {
     }
 
     @SneakyThrows
-    private int getNumOfMessagesSentByUser(TextChannel channel, User user) {
+    public static int getNumOfMessagesSentByUser(TextChannel channel, User user) {
         return channel.getIterableHistory()
                 .takeAsync(1000)
                 .thenApply(list -> list.stream()

@@ -2,6 +2,7 @@ package commands;
 
 import commands.general.tickets.RenameCommand;
 import commands.general.tickets.TicketCommand;
+import commands.general.tickets.events.CloseCommand;
 import lombok.Getter;
 import utils.component.interactions.AbstractSlashCommand;
 
@@ -18,7 +19,8 @@ public class SlashCommandManager {
     public SlashCommandManager() {
         addGeneralCommands(
                 new TicketCommand(),
-                new RenameCommand()
+                new RenameCommand(),
+                new CloseCommand()
         );
 
         addDevCommands(

@@ -46,9 +46,6 @@ public class RenameCommand extends AbstractSlashCommand implements ICommand {
                         .setPermissionCheck(event -> {
                             final var config = new TicketConfig();
                             final var guild = event.getGuild();
-
-                            if (!config.creatorExists(guild.getIdLong()))
-                                return false;
                             return config.isSupportMember(guild.getIdLong(), event.getUser().getIdLong());
                         })
                         .setBotRequiredPermissions(Permission.MANAGE_CHANNEL)
