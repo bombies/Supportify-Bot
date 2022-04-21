@@ -78,7 +78,7 @@ public class CloseCommand extends AbstractSlashCommand {
 
         File transcript = new TranscriptGenerator(ticket).createTranscript();
         Supportify.getApi().getUserById(ticket.getOwner()).openPrivateChannel().queue(privChannel -> {
-            privChannel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Your ticket (" + privChannel.getName() + ") has been closed by " + closer.getAsMention() + "\n" +
+            privChannel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Your ticket (" + channel.getName() + ") has been closed by " + closer.getAsMention() + "\n" +
                     "\nTime Opened: " + GeneralUtils.getDurationString(ticket.getTotalTimeOpened()) + "\n" +
                     "Messages Sent: " + (ticket.getTotalMessageCount() - 1) + "\n\nYour transcript can be found below.").build())
                     .addFile(transcript)
