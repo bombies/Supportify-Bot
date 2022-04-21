@@ -16,6 +16,7 @@ import utils.json.tickets.TicketConfig;
 import utils.json.tickets.TicketLogger;
 
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class CloseEvent extends ListenerAdapter {
     public static final int CLOSE_DELAY = 10;
@@ -53,12 +54,9 @@ public class CloseEvent extends ListenerAdapter {
         final var closer = event.getUser();
 
         Ticket ticket = config.getTicket(guild.getIdLong(), channel.getIdLong());
-        Long msgCount = channel.getIterableHistory().takeAsync(1000)
-                .thenApply(list -> list.stream().count())
-                .get();
         new TicketLogger(guild).sendLog(TicketLogger.LogType.TICKET_CLOSE, channel.getName() + " has been closed by " + closer.getAsMention() + "\n" +
                 "\nTime Opened: " + GeneralUtils.getDurationString(ticket.getTotalTimeOpened()) + "\n" +
-                "Messages Sent: " + (msgCount - 1));
+                "Messages Sent: " + (ticket.getTotalMessageCount() - 1));
 
         config.closeTicket(guild.getIdLong(), channel.getIdLong());
         event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "This ticket has been closed by: " + closer.getAsMention() + "\n" +
@@ -68,18 +66,19 @@ public class CloseEvent extends ListenerAdapter {
 
                     if (config.isSupportMember(guild.getIdLong(), closer.getIdLong())) {
                         config.incrementSupportMemberStats(guild.getIdLong(), closer.getIdLong(), TicketConfig.SupportStat.CLOSES, 1);
-                        config.incrementSupportMemberStats(guild.getIdLong(), closer.getIdLong(), TicketConfig.SupportStat.MESSAGES, (int) getNumOfMessagesSentByUser(channel, closer));
+                        config.incrementSupportMemberStats(guild.getIdLong(), closer.getIdLong(), TicketConfig.SupportStat.MESSAGES, getNumOfMessagesSentByUser(channel, closer));
                     }
                 });
     }
 
     @SneakyThrows
-    private long getNumOfMessagesSentByUser(TextChannel channel, User user) {
+    private int getNumOfMessagesSentByUser(TextChannel channel, User user) {
         return channel.getIterableHistory()
                 .takeAsync(1000)
                 .thenApply(list -> list.stream()
                         .filter(msg -> msg.getAuthor().getIdLong() == user.getIdLong())
-                        .count()
+                        .toList()
+                        .size()
                 )
                 .get();
     }

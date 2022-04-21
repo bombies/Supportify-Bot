@@ -1,6 +1,10 @@
 package utils.json.tickets;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
+import main.Supportify;
+
+import java.util.List;
 
 public class Ticket {
     @Getter
@@ -22,5 +26,13 @@ public class Ticket {
 
     public long getTotalTimeOpened() {
         return System.currentTimeMillis() - timeOpened;
+    }
+
+    @SneakyThrows
+    public int getTotalMessageCount() {
+        return Supportify.getApi().getTextChannelById(channelID)
+                .getIterableHistory().takeAsync(1000)
+                .thenApply(List::size)
+                .get();
     }
 }
