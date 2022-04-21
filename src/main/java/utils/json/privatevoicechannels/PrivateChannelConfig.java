@@ -1,6 +1,8 @@
 package utils.json.privatevoicechannels;
 
 import lombok.SneakyThrows;
+import main.Supportify;
+import net.dv8tion.jda.api.entities.User;
 import org.json.JSONObject;
 import utils.database.mongodb.databases.GuildDB;
 import utils.json.AbstractGuildConfig;
@@ -79,6 +81,11 @@ public class PrivateChannelConfig extends AbstractGuildConfig {
     }
 
     public PrivateVoiceChannel getChannelInfo(long gid, long uid) {
+        if (!hasChannelInfo(gid, uid)) {
+            User user = Supportify.getApi().getUserById(uid);
+            addChannel(gid, uid, user.getName() + "'s Private Channel", user.getName() + "'s Waiting Room");
+        }
+
         final var obj = getGuildObject(gid);
         final var pvcObj = obj.getJSONObject(GuildDB.Field.PrivateChannels.PRIVATE_VOICE_CHANNELS.toString());
         final var userChannelInfoArr = pvcObj.getJSONArray(GuildDB.Field.PrivateChannels.USER_CHANNELS.toString());

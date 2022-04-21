@@ -2,6 +2,8 @@ package main;
 
 import commands.SlashCommandManager;
 import commands.general.privatevoicechannels.events.PrivateChannelCreatorDeletionEvent;
+import commands.general.privatevoicechannels.events.PrivateChannelCreatorEvents;
+import commands.general.privatevoicechannels.events.PrivateChannelEvents;
 import commands.general.tickets.events.*;
 import constants.ENV;
 import lombok.Getter;
@@ -36,12 +38,13 @@ public class Supportify {
                             GatewayIntent.DIRECT_MESSAGES,
                             GatewayIntent.GUILD_BANS,
                             GatewayIntent.GUILD_INVITES,
-                            GatewayIntent.GUILD_MESSAGES
+                            GatewayIntent.GUILD_MESSAGES,
+                            GatewayIntent.GUILD_VOICE_STATES
 
             )
                     .setBulkDeleteSplittingEnabled(false)
                     .setChunkingFilter(ChunkingFilter.NONE)
-                    .setMemberCachePolicy(MemberCachePolicy.NONE)
+                    .setMemberCachePolicy(MemberCachePolicy.VOICE)
                     .addEventListeners(
                             new Listener(),
                             new CloseEvent(),
@@ -50,10 +53,11 @@ public class Supportify {
                             new TicketCreatorCategoryDeletionEvent(),
                             new TicketLogDeletionEvent(),
                             new SupportRoleDeletionEvent(),
-                            new PrivateChannelCreatorDeletionEvent()
+                            new PrivateChannelCreatorDeletionEvent(),
+                            new PrivateChannelEvents(),
+                            new PrivateChannelCreatorEvents()
                     )
                     .disableCache(
-                            CacheFlag.VOICE_STATE,
                             CacheFlag.ACTIVITY,
                             CacheFlag.EMOTE,
                             CacheFlag.CLIENT_STATUS,
@@ -63,7 +67,6 @@ public class Supportify {
                     .disableIntents(
                             GatewayIntent.DIRECT_MESSAGE_TYPING,
                             GatewayIntent.GUILD_MESSAGE_TYPING,
-                            GatewayIntent.GUILD_VOICE_STATES,
                             GatewayIntent.GUILD_PRESENCES,
                             GatewayIntent.DIRECT_MESSAGE_REACTIONS
                     )
