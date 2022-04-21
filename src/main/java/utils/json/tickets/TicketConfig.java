@@ -353,7 +353,7 @@ public class TicketConfig extends AbstractGuildConfig {
         getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
-    public long getLogChannel(long gid, long cid) {
+    public long getLogChannel(long gid) {
         final var obj = getGuildObject(gid);
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
         return ticketObj.getLong(GuildDB.Field.Tickets.LOG_CHANNEL.toString());

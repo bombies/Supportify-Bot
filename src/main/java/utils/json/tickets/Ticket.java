@@ -19,4 +19,8 @@ public class Ticket {
     public boolean isOwner(long id) {
         return owner == id;
     }
+
+    public long getTotalTimeOpened() {
+        return System.currentTimeMillis() - timeOpened;
+    }
 }

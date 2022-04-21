@@ -19,6 +19,7 @@ import utils.SupportifyEmbedUtils;
 import utils.component.interactions.AbstractSlashCommand;
 import utils.json.tickets.TicketConfig;
 import utils.json.tickets.TicketCreator;
+import utils.json.tickets.TicketLogger;
 
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +58,10 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                                 SubCommand.of(
                                         "setup",
                                         "Setup the ticket system"
+                                ),
+                                SubCommand.of(
+                                        "setuplogs",
+                                        "Setup the ticket logging channel"
                                 ),
                                 SubCommand.of(
                                         "blacklist",
@@ -128,6 +133,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                                 )
                         )
                         .setPermissionCheck(event -> event.getMember().hasPermission(Permission.ADMINISTRATOR))
+                        .setBotRequiredPermissions(Permission.MANAGE_PERMISSIONS, Permission.MESSAGE_MANAGE, Permission.MANAGE_CHANNEL)
                         .build()
         );
     }
@@ -147,6 +153,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
 
         switch (commandPath[1]) {
             case "setup" -> event.replyEmbeds(handleSetup(guild)).setEphemeral(true).queue();
+            case "setuplogs" -> event.replyEmbeds(handleLogSetup(guild)).setEphemeral(true).queue();
             case "blacklist" -> {
                 User user = event.getOption("user").getAsUser();
                 event.replyEmbeds(handleBlacklist(guild, user.getIdLong())).queue();
@@ -204,6 +211,31 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                 "\nPlease be patient as a support team member will be available shortly to assist you.");
 
         return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Successfully setup your ticket system!").build();
+    }
+
+    private MessageEmbed handleLogSetup(Guild guild) {
+        final var config = new TicketConfig();
+
+        if (!config.creatorCategoryExists(guild.getIdLong()))
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The log channel can't be setup until tickets have been setup!" +
+                    "\nRun the `setup` command to setup tickets.").build();
+
+        if (config.getLogChannel(guild.getIdLong()) != -1L)
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The log channel has already been setup!").build();
+
+        guild.getCategoryById(config.getTicketCreatorCategory(guild.getIdLong()))
+                .createTextChannel("ticket-logs")
+                .addPermissionOverride(guild.getPublicRole(),
+                        List.of(),
+                        List.of(Permission.VIEW_CHANNEL)
+                )
+                .addRolePermissionOverride(config.getLogChannel(guild.getIdLong()),
+                        List.of(Permission.VIEW_CHANNEL),
+                        List.of(Permission.MESSAGE_SEND, Permission.MESSAGE_ADD_REACTION, Permission.CREATE_PUBLIC_THREADS, Permission.CREATE_PUBLIC_THREADS)
+                )
+                .queue(channel -> config.setLogChannel(guild.getIdLong(), channel.getIdLong()));
+
+        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "I have successfully created the ticket logs channel!").build();
     }
 
     private void createCreatorChannel(Guild guild, Category category, TicketConfig config, String description, String emoji) {
@@ -331,6 +363,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                         .setActionRow(Button.of(ButtonStyle.DANGER, CLOSE_BUTTON_ID, "Close ticket", Emoji.fromUnicode("🔒")))
                         .queue(message -> {
                             config.openTicket(guildID, channel.getIdLong(), user.getIdLong());
+                            new TicketLogger(guild).sendLog(TicketLogger.LogType.TICKET_CREATION, user.getAsMention() + " has created " + channel.getName());
                             event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "I've created a ticket for you in: " + channel.getAsMention()).build())
                                     .setEphemeral(true)
                                     .queue();

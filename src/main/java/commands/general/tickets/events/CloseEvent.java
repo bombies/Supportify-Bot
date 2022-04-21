@@ -9,8 +9,11 @@ import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import utils.GeneralUtils;
 import utils.SupportifyEmbedUtils;
+import utils.json.tickets.Ticket;
 import utils.json.tickets.TicketConfig;
+import utils.json.tickets.TicketLogger;
 
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +35,7 @@ public class CloseEvent extends ListenerAdapter {
         config.closeTicket(event.getGuild().getIdLong(), channelDeleted.getIdLong());
     }
 
-    @Override
+    @Override @SneakyThrows
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         if (!event.isFromGuild()) return;
         if (!event.getButton().getId().equals(TicketCommand.CLOSE_BUTTON_ID)) return;
@@ -49,9 +52,17 @@ public class CloseEvent extends ListenerAdapter {
 
         final var closer = event.getUser();
 
+        Ticket ticket = config.getTicket(guild.getIdLong(), channel.getIdLong());
+        Long msgCount = channel.getIterableHistory().takeAsync(1000)
+                .thenApply(list -> list.stream().count())
+                .get();
+        new TicketLogger(guild).sendLog(TicketLogger.LogType.TICKET_CLOSE, channel.getName() + " has been closed by " + closer.getAsMention() + "\n" +
+                "\nTime Opened: " + GeneralUtils.getDurationString(ticket.getTotalTimeOpened()) + "\n" +
+                "Messages Sent: " + (msgCount - 1));
+
         config.closeTicket(guild.getIdLong(), channel.getIdLong());
         event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "This ticket has been closed by: " + closer.getAsMention() + "\n" +
-                "This channel will be deleted in "+CLOSE_DELAY+" seconds...").build())
+                "This channel will be deleted in " + CLOSE_DELAY + " seconds...").build())
                 .queue(success -> {
                     channel.delete().queueAfter(CLOSE_DELAY, TimeUnit.SECONDS);
 
