@@ -193,7 +193,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                                     "Ticket Stats",
                             "*Here are the stats for* " + member.getAsMention()
                                     )
-                                    .addField("Closes", String.valueOf(supportMember.getNumOfCloses()), false)
+                                    .addField("Closes", String.valueOf(supportMember.getNumOfCloses()), true)
                                     .addField("Messages", String.valueOf(supportMember.getNumOfMessages()), true)
                                     .setTimestamp(Instant.now())
                                     .build()
