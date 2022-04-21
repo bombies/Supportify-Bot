@@ -1,6 +1,5 @@
 package utils.database.mongodb.cache;
 
-import lombok.Getter;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +7,6 @@ import utils.database.mongodb.databases.BotDB;
 
 public class BotDBCache extends AbstractMongoCache {
     private final static Logger logger = LoggerFactory.getLogger(BotDBCache.class);
-    @Getter
     private static BotDBCache instance;
 
     private BotDBCache() {
@@ -33,7 +31,7 @@ public class BotDBCache extends AbstractMongoCache {
     }
 
     private void update(JSONObject jsonObject) {
-        updateCache(jsonObject, "identifier", "robertify_main_config");
+        updateCache(jsonObject, "identifier", "supportify_main_config");
     }
 
     public static void initCache() {
@@ -44,5 +42,11 @@ public class BotDBCache extends AbstractMongoCache {
 
     public String getJSON(boolean indented) {
         return indented ? getCache().toString(4) : getCache().toString();
+    }
+
+    public static BotDBCache getInstance() {
+        if (instance == null)
+            instance = new BotDBCache();
+        return instance;
     }
 }

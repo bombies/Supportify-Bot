@@ -23,7 +23,7 @@ public class BotDB extends AbstractMongoDatabase {
         if (getCollection().countDocuments() == 0) {
             addDocument(
                     DocumentBuilder.create()
-                            .addField("identifier", "robertify_main_config")
+                            .addField("identifier", "supportify_main_config")
                             .addField(Fields.LAST_BOOTED, 0L)
                             .build()
             );

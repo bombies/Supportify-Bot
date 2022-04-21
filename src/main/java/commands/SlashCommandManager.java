@@ -5,6 +5,7 @@ import commands.general.tickets.TicketCommand;
 import commands.general.tickets.CloseCommand;
 import commands.general.privatevoicechannels.PrivateChannelCommand;
 import commands.misc.PingCommand;
+import commands.utility.UptimeCommand;
 import lombok.Getter;
 import utils.component.interactions.AbstractSlashCommand;
 
@@ -35,7 +36,7 @@ public class SlashCommandManager {
         );
 
         addUtilityommands(
-
+            new UptimeCommand()
         );
 
         addDevCommands(
