@@ -2,6 +2,7 @@ package commands.general.tickets.events;
 
 import commands.general.tickets.TicketCommand;
 import lombok.SneakyThrows;
+import main.Supportify;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -9,14 +10,18 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import org.jetbrains.annotations.NotNull;
 import utils.GeneralUtils;
 import utils.SupportifyEmbedUtils;
 import utils.json.tickets.Ticket;
 import utils.json.tickets.TicketConfig;
 import utils.json.tickets.TicketLogger;
+import utils.json.tickets.transcripts.TranscriptGenerator;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 public class CloseEvent extends ListenerAdapter {
@@ -70,6 +75,15 @@ public class CloseEvent extends ListenerAdapter {
                         config.incrementSupportMemberStats(guild.getIdLong(), closer.getIdLong(), TicketConfig.SupportStat.MESSAGES, getNumOfMessagesSentByUser(channel, closer));
                     }
                 });
+
+        File transcript = new TranscriptGenerator(ticket).createTranscript();
+        Supportify.getApi().retrieveUserById(ticket.getOwner())
+                .queue(user -> user.openPrivateChannel().queue(privChannel ->
+                        privChannel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Your ticket (" + privChannel.getName() + ") has been closed by " + closer.getAsMention() + "\n" +
+                                "\nTime Opened: " + GeneralUtils.getDurationString(ticket.getTotalTimeOpened()) + "\n" +
+                                "Messages Sent: " + (ticket.getTotalMessageCount() - 1) + "\n\nYour transcript can be found below.").build())
+                        .addFile(transcript)
+                        .queue(success -> transcript.delete()), new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER, ignored -> {})));
     }
 
     @SneakyThrows

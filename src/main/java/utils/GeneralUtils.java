@@ -3,6 +3,7 @@ package utils;
 import constants.BotConstants;
 import constants.ENV;
 import constants.TimeFormat;
+import lombok.SneakyThrows;
 import main.Config;
 import me.duncte123.botcommons.messaging.EmbedUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -344,6 +345,19 @@ public class GeneralUtils {
         FileWriter writer = new FileWriter(passedFile.getPath(), false);
         writer.write(content);
         writer.close();
+    }
+
+    @SneakyThrows
+    public static void makeDir(String path) {
+        if (!Files.exists(Path.of(path)))
+            Files.createDirectory(Path.of(path));
+    }
+
+    @SneakyThrows
+    public static void createFile(Path path, String fileName) {
+        Path fullPath = Path.of(path.toString() + "/" + fileName);
+        if (!Files.exists(fullPath))
+            Files.createFile(fullPath);
     }
 
     public static void setDefaultEmbed() {

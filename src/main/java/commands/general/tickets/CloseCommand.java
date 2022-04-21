@@ -1,7 +1,10 @@
 package commands.general.tickets;
 
+import main.Supportify;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.exceptions.ErrorHandler;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import org.jetbrains.annotations.NotNull;
 import utils.GeneralUtils;
 import utils.SupportifyEmbedUtils;
@@ -9,7 +12,9 @@ import utils.component.interactions.AbstractSlashCommand;
 import utils.json.tickets.Ticket;
 import utils.json.tickets.TicketConfig;
 import utils.json.tickets.TicketLogger;
+import utils.json.tickets.transcripts.TranscriptGenerator;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import static commands.general.tickets.events.CloseEvent.CLOSE_DELAY;
@@ -70,5 +75,14 @@ public class CloseCommand extends AbstractSlashCommand {
                         config.incrementSupportMemberStats(guild.getIdLong(), closer.getIdLong(), TicketConfig.SupportStat.MESSAGES, getNumOfMessagesSentByUser(channel, closer));
                     }
                 });
+
+        File transcript = new TranscriptGenerator(ticket).createTranscript();
+        Supportify.getApi().getUserById(ticket.getOwner()).openPrivateChannel().queue(privChannel -> {
+            privChannel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Your ticket (" + privChannel.getName() + ") has been closed by " + closer.getAsMention() + "\n" +
+                    "\nTime Opened: " + GeneralUtils.getDurationString(ticket.getTotalTimeOpened()) + "\n" +
+                    "Messages Sent: " + (ticket.getTotalMessageCount() - 1) + "\n\nYour transcript can be found below.").build())
+                    .addFile(transcript)
+                    .queue(success -> transcript.delete());
+        }, new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER, ignored -> {}));
     }
 }
