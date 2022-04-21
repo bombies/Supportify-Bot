@@ -155,8 +155,8 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
             case "setup" -> event.replyEmbeds(handleSetup(guild)).setEphemeral(true).queue();
             case "setuplogs" -> event.replyEmbeds(handleLogSetup(guild)).setEphemeral(true).queue();
             case "blacklist" -> {
-                User user = event.getOption("user").getAsUser();
-                event.replyEmbeds(handleBlacklist(guild, user.getIdLong())).queue();
+                Member member = event.getOption("user").getAsMember();
+                event.replyEmbeds(handleBlacklist(guild, member)).queue();
             }
             case "unblacklist" -> {
                 User user = event.getOption("user").getAsUser();
@@ -259,15 +259,18 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
         });
     }
 
-    private MessageEmbed handleBlacklist(Guild guild, long uid) {
+    private MessageEmbed handleBlacklist(Guild guild, Member member) {
         final var config = new TicketConfig();
         final var guildID = guild.getIdLong();
 
-        if (config.isBlackListed(guildID, uid))
-            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " is already blacklisted!").build();
+        if (member.hasPermission(Permission.ADMINISTRATOR) || config.isSupportMember(member))
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "You can't blacklist this member!").build();
 
-        config.blackListUser(guildID, uid);
-        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", GeneralUtils.toMention(uid, GeneralUtils.Mentioner.USER) + " has been blacklisted!").build();
+        if (config.isBlackListed(guildID, member.getIdLong()))
+            return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", member.getAsMention() + " is already blacklisted!").build();
+
+        config.blackListUser(guildID, member.getIdLong());
+        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", member.getAsMention() + " has been blacklisted!").build();
     }
 
     private MessageEmbed handleUnBlacklist(Guild guild, long uid) {
