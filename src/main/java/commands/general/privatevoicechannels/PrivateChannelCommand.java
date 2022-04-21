@@ -1,4 +1,4 @@
-package commands.general.tickets.privatevoicechannels;
+package commands.general.privatevoicechannels;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

@@ -3,7 +3,7 @@ package commands;
 import commands.general.tickets.RenameCommand;
 import commands.general.tickets.TicketCommand;
 import commands.general.tickets.CloseCommand;
-import commands.general.tickets.privatevoicechannels.PrivateChannelCommand;
+import commands.general.privatevoicechannels.PrivateChannelCommand;
 import lombok.Getter;
 import utils.component.interactions.AbstractSlashCommand;
 
