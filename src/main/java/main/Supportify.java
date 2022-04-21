@@ -1,6 +1,7 @@
 package main;
 
 import commands.SlashCommandManager;
+import commands.general.privatevoicechannels.events.PrivateChannelCreatorDeletionEvent;
 import commands.general.tickets.events.*;
 import constants.ENV;
 import lombok.Getter;
@@ -48,7 +49,8 @@ public class Supportify {
                             new TicketCreatorDeletionEvent(),
                             new TicketCreatorCategoryDeletionEvent(),
                             new TicketLogDeletionEvent(),
-                            new SupportRoleDeletionEvent()
+                            new SupportRoleDeletionEvent(),
+                            new PrivateChannelCreatorDeletionEvent()
                     )
                     .disableCache(
                             CacheFlag.VOICE_STATE,

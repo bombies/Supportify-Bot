@@ -32,6 +32,10 @@ public class PrivateChannelConfig extends AbstractGuildConfig {
         return pvcObj.getLong(GuildDB.Field.PrivateChannels.VC_CREATOR.toString());
     }
 
+    public void removeCreator(long gid) {
+        setCreator(gid, -1L);
+    }
+
     public void addChannel(long gid, long uid, String roomName, String waitingRoomName) {
         if (hasChannelInfo(gid, uid))
             throw new IllegalArgumentException("This user already has channel information in this guild!");
