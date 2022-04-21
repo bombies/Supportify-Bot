@@ -15,6 +15,10 @@ public class SlashCommandManager {
     @Getter
     private final List<AbstractSlashCommand> generalCommands = new ArrayList<>();
     @Getter
+    private final List<AbstractSlashCommand> miscCommands = new ArrayList<>();
+    @Getter
+    private final List<AbstractSlashCommand> utilityCommands = new ArrayList<>();
+    @Getter
     private final List<AbstractSlashCommand> devCommands = new ArrayList<>();
 
     public SlashCommandManager() {
@@ -23,6 +27,14 @@ public class SlashCommandManager {
                 new RenameCommand(),
                 new CloseCommand(),
                 new PrivateChannelCommand()
+        );
+
+        addMiscCommands(
+
+        );
+
+        addUtilityommands(
+
         );
 
         addDevCommands(
@@ -34,12 +46,32 @@ public class SlashCommandManager {
         generalCommands.addAll(List.of(commands));
     }
 
+    private void addMiscCommands(AbstractSlashCommand... commands) {
+        miscCommands.addAll(List.of(commands));
+    }
+
+    private void addUtilityommands(AbstractSlashCommand... commands) {
+        utilityCommands.addAll(List.of(commands));
+    }
+
     private void addDevCommands(AbstractSlashCommand... commands) {
         devCommands.addAll(List.of(commands));
     }
 
     public boolean isGeneralCommand(AbstractSlashCommand command) {
         return getGeneralCommands()
+                .stream()
+                .anyMatch(it -> it.getName().equalsIgnoreCase(command.getName()));
+    }
+
+    public boolean isMiscCommand(AbstractSlashCommand command) {
+        return getMiscCommands()
+                .stream()
+                .anyMatch(it -> it.getName().equalsIgnoreCase(command.getName()));
+    }
+
+    public boolean isUtilityCommand(AbstractSlashCommand command) {
+        return getUtilityCommands()
                 .stream()
                 .anyMatch(it -> it.getName().equalsIgnoreCase(command.getName()));
     }
@@ -57,7 +89,11 @@ public class SlashCommandManager {
     }
 
     public List<AbstractSlashCommand> getCommands() {
-        return new ArrayList<>(generalCommands);
+        final List<AbstractSlashCommand> commands = new ArrayList<>();
+        commands.addAll(generalCommands);
+        commands.addAll(miscCommands);
+        commands.addAll(utilityCommands);
+        return commands;
     }
 
     public AbstractSlashCommand getCommand(String name) {
