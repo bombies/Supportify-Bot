@@ -110,8 +110,9 @@ public class GuildDB extends AbstractMongoDatabase {
             PRIVATE_VOICE_CHANNELS("private_voice_channels"),
             VC_CREATOR("vc_creator"),
             USER_CHANNELS("user_channel_info"),
-            PVC_CHANNEL_NAME("channel_name"),
-            PVC_WAITING_ROOM_NAME("waiting_room_name");
+            USER_ID("user_id"),
+            CHANNEL_NAME("channel_name"),
+            WAITING_ROOM_NAME("waiting_room_name");
 
             private final String str;
 
