@@ -4,6 +4,7 @@ import commands.CommandManager;
 import commands.general.tickets.RenameCommand;
 import commands.general.tickets.TicketCommand;
 import commands.general.tickets.CloseCommand;
+import commands.general.tickets.privatevoicechannels.PrivateChannelCommand;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
@@ -109,7 +110,7 @@ public class Listener extends ListenerAdapter {
     }
 
     public void loadNeededSlashCommands(Guild g) {
-
+        new PrivateChannelCommand().loadCommand(g);
     }
 
     public void unloadCommands(Guild g) {
