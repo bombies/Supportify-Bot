@@ -66,7 +66,7 @@ public class Listener extends ListenerAdapter {
                 } catch (InsufficientPermissionException ignored) {}
             }
         } else if (!msg.getMentionedMembers().isEmpty() && raw.split(" ").length == 1) {
-            if (!raw.startsWith("<@!"+guild.getSelfMember().getId()+">"))
+            if (!raw.startsWith("<@"+guild.getSelfMember().getId()+">"))
                 return;
 
             try {
