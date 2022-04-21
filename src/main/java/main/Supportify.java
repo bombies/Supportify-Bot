@@ -47,7 +47,8 @@ public class Supportify {
                             new TicketDeletionEvent(),
                             new TicketCreatorDeletionEvent(),
                             new TicketCreatorCategoryDeletionEvent(),
-                            new TicketLogDeletionEvent()
+                            new TicketLogDeletionEvent(),
+                            new SupportRoleDeletionEvent()
                     )
                     .disableCache(
                             CacheFlag.VOICE_STATE,

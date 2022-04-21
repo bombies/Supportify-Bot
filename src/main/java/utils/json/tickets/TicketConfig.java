@@ -308,9 +308,16 @@ public class TicketConfig extends AbstractGuildConfig {
     }
 
     public long getSupportRole(long gid) {
+        if (!supportRoleIsSet(gid))
+            throw new IllegalStateException("The support for this guild has not been set!");
+
         final var obj = getGuildObject(gid);
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
         return ticketObj.getLong(GuildDB.Field.Tickets.SUPPORT_ROLE.toString());
+    }
+
+    public void removeSupportRole(long gid) {
+        setSupportRole(gid, -1L);
     }
 
     public boolean isSupportRole(long gid, long rid) {
@@ -323,7 +330,7 @@ public class TicketConfig extends AbstractGuildConfig {
 
     @SneakyThrows
     public boolean isSupportMember(long gid, long uid) {
-        if (getSupportRole(gid) == -1L)
+        if (!supportRoleIsSet(gid))
             return false;
 
         Guild guild = Supportify.getApi().getGuildById(gid);
@@ -332,13 +339,17 @@ public class TicketConfig extends AbstractGuildConfig {
     }
 
     public boolean isSupportMember(Member member) {
-        if (getSupportRole(member.getGuild().getIdLong()) == -1L)
+        if (!supportRoleIsSet(member.getGuild().getIdLong()))
             return false;
 
         for (final var role : member.getRoles())
             if (isSupportRole(role))
                 return true;
         return false;
+    }
+
+    public boolean supportRoleIsSet(long gid) {
+        return getSupportRole(gid) != -1;
     }
 
     public void setLogChannel(long gid, long cid) {
