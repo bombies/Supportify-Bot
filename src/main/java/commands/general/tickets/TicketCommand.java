@@ -17,10 +17,12 @@ import org.jetbrains.annotations.NotNull;
 import utils.GeneralUtils;
 import utils.SupportifyEmbedUtils;
 import utils.component.interactions.AbstractSlashCommand;
+import utils.json.tickets.SupportTeamMember;
 import utils.json.tickets.TicketConfig;
 import utils.json.tickets.TicketCreator;
 import utils.json.tickets.TicketLogger;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -83,6 +85,18 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                                                         OptionType.USER,
                                                         "user",
                                                         "The user to un-blacklist",
+                                                        true
+                                                )
+                                        )
+                                ),
+                                SubCommand.of(
+                                        "stats",
+                                        "Check out the stats of a support team member!",
+                                        List.of(
+                                                CommandOption.of(
+                                                        OptionType.USER,
+                                                        "member",
+                                                        "The support team member to view",
                                                         true
                                                 )
                                         )
@@ -161,6 +175,33 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
             case "unblacklist" -> {
                 User user = event.getOption("user").getAsUser();
                 event.replyEmbeds(handleUnBlacklist(guild, user.getIdLong())).queue();
+            }
+            case "stats" -> {
+                final var config = new TicketConfig();
+                final var member = event.getOption("member").getAsMember();
+
+                if (!config.isSupportMember(member)) {
+                    event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Ticket Stats", member.getAsMention() + " isn't apart of the support team!").build())
+                            .setEphemeral(true)
+                            .queue();
+                    return;
+                }
+
+                try {
+                    SupportTeamMember supportMember = config.getSupportMember(member);
+                    event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor(
+                                    "Ticket Stats",
+                            "*Here are the stats for* " + member.getAsMention()
+                                    )
+                                    .addField("Closes", String.valueOf(supportMember.getNumOfCloses()), false)
+                                    .addField("Messages", String.valueOf(supportMember.getNumOfMessages()), true)
+                                    .setTimestamp(Instant.now())
+                                    .build()
+                    ).queue();
+                } catch (IllegalArgumentException e) {
+                    event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Ticket Stats", member.getAsMention() + " doesn't have any stats!").build())
+                            .queue();
+                }
             }
             case "set" -> {
                 switch (commandPath[2]) {

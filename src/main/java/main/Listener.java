@@ -109,9 +109,7 @@ public class Listener extends ListenerAdapter {
     }
 
     public void loadNeededSlashCommands(Guild g) {
-        new TicketCommand().loadCommand(g);
-        new RenameCommand().loadCommand(g);
-        new CloseCommand().loadCommand(g);
+
     }
 
     public void unloadCommands(Guild g) {

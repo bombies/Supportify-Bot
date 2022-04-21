@@ -404,6 +404,10 @@ public class TicketConfig extends AbstractGuildConfig {
         );
     }
 
+    public SupportTeamMember getSupportMember(Member member) {
+        return getSupportMember(member.getGuild().getIdLong(), member.getIdLong());
+    }
+
     public void incrementSupportMemberStats(SupportTeamMember member, SupportStat stat, int step) {
         incrementSupportMemberStats(member.guildID, member.userID, stat, step);
     }
