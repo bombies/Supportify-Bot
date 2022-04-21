@@ -5,6 +5,7 @@ public enum ENV {
     OWNER_ID("owner_id"),
     DEFAULT_PREFIX("prefix"),
     BOT_COLOR("bot_color"),
+    BOT_LOGO("bot_logo"),
     BOT_NAME("bot_name"),
     MONGO_DATABASE_NAME("mongo_database_name"),
     MONGO_CLUSTER_NAME("mongo_cluster_name"),

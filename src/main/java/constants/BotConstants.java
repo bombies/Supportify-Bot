@@ -4,7 +4,7 @@ import main.Config;
 
 public enum BotConstants {
     EMBED_TITLE(Config.get(ENV.BOT_NAME)),
-    EMBED_LOGO("https://cdn-icons-png.flaticon.com/512/174/174872.png"); // TODO Change
+    EMBED_LOGO(Config.get(ENV.BOT_LOGO));
 
     private final String str;
 
