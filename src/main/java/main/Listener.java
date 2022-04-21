@@ -2,6 +2,7 @@ package main;
 
 import commands.CommandManager;
 import commands.general.privatevoicechannels.PrivateChannelCommand;
+import commands.general.tickets.TicketCommand;
 import commands.misc.PingCommand;
 import commands.utility.UptimeCommand;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -111,7 +112,7 @@ public class Listener extends ListenerAdapter {
     }
 
     public void loadNeededSlashCommands(Guild g) {
-        new UptimeCommand().loadCommand(g);
+        new TicketCommand().loadCommand(g);
     }
 
     public void unloadCommands(Guild g) {

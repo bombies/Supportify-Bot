@@ -107,42 +107,55 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                                         "set",
                                         "Configure certain values for tickets",
                                         List.of(
-                                              SubCommand.of(
-                                                      "creatormessage",
-                                                      "Edit the creator message",
-                                                      List.of(
-                                                              CommandOption.of(
-                                                                      OptionType.STRING,
-                                                                      "desc",
-                                                                      "The new desription",
-                                                                      true
-                                                              )
-                                                      )
-                                              ),
-                                              SubCommand.of(
-                                                      "creatoremoji",
-                                                      "Edit the creator button emoji",
-                                                      List.of(
-                                                              CommandOption.of(
-                                                                      OptionType.STRING,
-                                                                      "emoji",
-                                                                      "The new button emoji",
-                                                                      true
-                                                              )
-                                                      )
-                                              ),
-                                              SubCommand.of(
-                                                      "supportrole",
-                                                      "Edit the support team role",
-                                                      List.of(
-                                                              CommandOption.of(
-                                                                      OptionType.ROLE,
-                                                                      "role",
-                                                                      "The new support role",
-                                                                      true
-                                                              )
-                                                      )
-                                              )
+
+                                                SubCommand.of(
+                                                        "creatormessage",
+                                                        "Edit the creator message",
+                                                        List.of(
+                                                                CommandOption.of(
+                                                                        OptionType.STRING,
+                                                                        "desc",
+                                                                        "The new desription",
+                                                                        true
+                                                                )
+                                                        )
+                                                ),
+                                                SubCommand.of(
+                                                        "creatoremoji",
+                                                        "Edit the creator button emoji",
+                                                        List.of(
+                                                                CommandOption.of(
+                                                                        OptionType.STRING,
+                                                                        "emoji",
+                                                                        "The new button emoji",
+                                                                        true
+                                                                )
+                                                        )
+                                                ),
+                                                SubCommand.of(
+                                                        "supportrole",
+                                                        "Edit the support team role",
+                                                        List.of(
+                                                                CommandOption.of(
+                                                                        OptionType.ROLE,
+                                                                        "role",
+                                                                        "The new support role",
+                                                                        true
+                                                                )
+                                                        )
+                                                ),
+                                                SubCommand.of(
+                                                        "ticketmessage",
+                                                        "Edit the message to be sent in a ticket",
+                                                        List.of(
+                                                                CommandOption.of(
+                                                                        OptionType.STRING,
+                                                                        "message",
+                                                                        "The new message",
+                                                                        true
+                                                                )
+                                                        )
+                                                )
                                         )
                                 )
                         )
@@ -216,6 +229,10 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
                     case "supportrole" -> {
                         Role role = event.getOption("role").getAsRole();
                         event.replyEmbeds(setSupportRole(guild, role)).setEphemeral(true).queue();
+                    }
+                    case "ticketmessage" -> {
+                        String message = event.getOption("message").getAsString();
+                        event.replyEmbeds(setTicketMessage(guild, message)).setEphemeral(true).queue();
                     }
                 }
             }
@@ -370,6 +387,14 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
 
         config.setSupportRole(guild.getIdLong(), role.getIdLong());
         return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The support role has been set to: " + role.getAsMention()).build();
+    }
+
+    private MessageEmbed setTicketMessage(Guild guild, String message) {
+        final var config = new TicketConfig();
+
+
+        config.setTicketMessageDescription(guild.getIdLong(), message);
+        return SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "You have set the default ticket message to:\n\n" + message.replaceAll("\\\\n", "\n")).build();
     }
 
     @Override

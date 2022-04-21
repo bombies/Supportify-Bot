@@ -154,7 +154,7 @@ public class TicketConfig extends AbstractGuildConfig {
     public void setTicketMessageDescription(long gid, String description) {
         final var obj = getGuildObject(gid);
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
-        ticketObj.put(GuildDB.Field.Tickets.MESSAGE_DESCRIPTION.toString(), description);
+        ticketObj.put(GuildDB.Field.Tickets.MESSAGE_DESCRIPTION.toString(), description.replaceAll("\\\\n", "\n"));
         getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }
 
