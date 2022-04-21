@@ -2,6 +2,7 @@ package main;
 
 import commands.CommandManager;
 import commands.general.privatevoicechannels.PrivateChannelCommand;
+import commands.misc.PingCommand;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
@@ -107,7 +108,7 @@ public class Listener extends ListenerAdapter {
     }
 
     public void loadNeededSlashCommands(Guild g) {
-        new PrivateChannelCommand().loadCommand(g);
+        new PingCommand().loadCommand(g);
     }
 
     public void unloadCommands(Guild g) {

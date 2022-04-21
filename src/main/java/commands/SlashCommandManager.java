@@ -4,6 +4,7 @@ import commands.general.tickets.RenameCommand;
 import commands.general.tickets.TicketCommand;
 import commands.general.tickets.CloseCommand;
 import commands.general.privatevoicechannels.PrivateChannelCommand;
+import commands.misc.PingCommand;
 import lombok.Getter;
 import utils.component.interactions.AbstractSlashCommand;
 
@@ -30,7 +31,7 @@ public class SlashCommandManager {
         );
 
         addMiscCommands(
-
+            new PingCommand()
         );
 
         addUtilityommands(
