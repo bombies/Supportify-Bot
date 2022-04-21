@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utils.SupportifyEmbedUtils;
 import utils.component.interactions.AbstractSlashCommand;
 import utils.json.guildconfig.GuildConfig;
 
@@ -69,7 +70,9 @@ public class Listener extends ListenerAdapter {
                 return;
 
             try {
-
+                msg.replyEmbeds(SupportifyEmbedUtils.embedMessage("Hey " + event.getAuthor().getAsMention() + "! Thank you for using Supportify. :)\n" +
+                        "My prefix in this server is: `" + prefix + "`\n\n" +
+                        "Type `" + prefix + "help` to see all the commands I offer!\n").build()).queue();
             } catch (InsufficientPermissionException e) {
                 if (!e.getMessage().contains("EMBED")) return;
 
