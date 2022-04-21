@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import utils.SupportifyEmbedUtils;
 import utils.component.interactions.AbstractSlashCommand;
 import utils.json.tickets.TicketConfig;
+import utils.json.tickets.TicketLogger;
 
 public class RenameCommand extends AbstractSlashCommand implements ICommand {
     @Override
@@ -72,11 +73,13 @@ public class RenameCommand extends AbstractSlashCommand implements ICommand {
                     .queue();
             return;
         }
-
+        final var oldName = channel.getName();
         final var name = event.getOption("name").getAsString();
         channel.getManager().setName(name).queue(success -> {
             event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "The ticket has been renamed to: " + name).build())
-                    .queue();
+                    .queue(s -> new TicketLogger(guild).sendLog(TicketLogger.LogType.TICKET_RENAME,
+                            event.getUser().getAsMention() + " has renamed " + oldName + " to " + name
+                    ));
         });
     }
 }
