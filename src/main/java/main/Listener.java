@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utils.SupportifyEmbedUtils;
 import utils.component.interactions.AbstractSlashCommand;
+import utils.database.mongodb.cache.BotDBCache;
 import utils.json.guildconfig.GuildConfig;
 
 public class Listener extends ListenerAdapter {
@@ -38,6 +39,7 @@ public class Listener extends ListenerAdapter {
 
         logger.info("Watching {} guilds", jda.getGuildCache().size());
         Supportify.getApi().getPresence().setPresence(OnlineStatus.ONLINE, Activity.watching("/help"));
+        BotDBCache.getInstance().setLastStartup(System.currentTimeMillis());
     }
 
     @Override

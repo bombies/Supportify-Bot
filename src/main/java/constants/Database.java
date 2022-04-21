@@ -8,10 +8,10 @@ public enum Database {
     public enum Mongo {
         MAIN("Learning0"),
         SUPPORTIFY_DATABASE(Config.get(ENV.MONGO_DATABASE_NAME)),
-        SUPPORTIFY_GUILDS("guilds");
 
         // Collections
-
+        SUPPORTIFY_BOT_DB("bot"),
+        SUPPORTIFY_GUILDS("guilds");
 
         private final String str;
 
