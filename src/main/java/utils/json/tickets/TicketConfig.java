@@ -60,10 +60,6 @@ public class TicketConfig extends AbstractGuildConfig {
         final var ticketObj = obj.getJSONObject(GuildDB.Field.Tickets.INFO.toString());
 
         ticketObj.put(GuildDB.Field.Tickets.CREATOR_CATEGORY.toString(), -1L);
-        ticketObj.put(GuildDB.Field.Tickets.CREATOR_CHANNEL.toString(), -1L);
-        ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE.toString(), -1L);
-        ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_DESCRIPTION.toString(), "");
-        ticketObj.put(GuildDB.Field.Tickets.CREATOR_MESSAGE_EMOJI.toString(), "");
 
         getCache().setField(gid, GuildDB.Field.Tickets.INFO, ticketObj);
     }

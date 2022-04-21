@@ -2,6 +2,7 @@ package main;
 
 import commands.SlashCommandManager;
 import commands.general.tickets.events.CloseEvent;
+import commands.general.tickets.events.TicketCreatorCategoryDeletionEvent;
 import commands.general.tickets.events.TicketCreatorDeletionEvent;
 import commands.general.tickets.events.TicketDeletionEvent;
 import constants.ENV;
@@ -47,7 +48,8 @@ public class Supportify {
                             new Listener(),
                             new CloseEvent(),
                             new TicketDeletionEvent(),
-                            new TicketCreatorDeletionEvent()
+                            new TicketCreatorDeletionEvent(),
+                            new TicketCreatorCategoryDeletionEvent()
                     )
                     .disableCache(
                             CacheFlag.VOICE_STATE,
