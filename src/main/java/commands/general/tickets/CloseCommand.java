@@ -14,6 +14,7 @@ import utils.json.tickets.TicketConfig;
 import utils.json.tickets.TicketLogger;
 import utils.json.tickets.transcripts.TranscriptGenerator;
 
+import java.awt.*;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
@@ -68,6 +69,10 @@ public class CloseCommand extends AbstractSlashCommand {
         event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "This ticket has been closed by: " + closer.getAsMention() + "\n" +
                         "This channel will be deleted in " + CLOSE_DELAY + " seconds...").build())
                 .queue(success -> {
+                    channel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessage("Saving transcript...")
+                                    .setColor(new Color(150, 0, 3))
+                            .build()
+                    ).queue();
                     channel.delete().queueAfter(CLOSE_DELAY, TimeUnit.SECONDS);
 
                     if (config.isSupportMember(guild.getIdLong(), closer.getIdLong())) {

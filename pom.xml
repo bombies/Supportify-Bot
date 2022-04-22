@@ -37,9 +37,9 @@
             <version>2.2.3</version>
         </dependency>
         <dependency>
-            <groupId>com.github.xirado</groupId>
+            <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>b37020f</version>
+            <version>5.0.0-alpha.10</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>

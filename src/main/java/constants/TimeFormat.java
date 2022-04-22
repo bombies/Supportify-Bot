@@ -33,7 +33,12 @@ public enum TimeFormat {
     /**
      * Formats the string in such format: Tue, 29 June 2021 8:20:43 EST
      */
-    E_DD_MMM_YYYY_HH_MM_SS_Z("E, dd MMM yyyy HH:mm:ss z");
+    E_DD_MMM_YYYY_HH_MM_SS_Z("E, dd MMM yyyy HH:mm:ss z"),
+
+    /**
+     * Formats the string in such format: June 29 2021 8:20:43
+     */
+    MMM_DD_YYYY_HH_MM_SS("MMM dd yyyy HH:mm:ss");
 
     private final String str;
 

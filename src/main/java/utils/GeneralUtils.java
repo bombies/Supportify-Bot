@@ -230,7 +230,7 @@ public class GeneralUtils {
     public static String formatDate(long date, TimeFormat style) {
         return switch (style) {
             case DD_MMMM_YYYY, MM_DD_YYYY, DD_MMMM_YYYY_ZZZZ, DD_M_YYYY_HH_MM_SS,
-                    E_DD_MMM_YYYY_HH_MM_SS_Z -> new SimpleDateFormat(style.toString()).format(date);
+                    E_DD_MMM_YYYY_HH_MM_SS_Z, MMM_DD_YYYY_HH_MM_SS -> new SimpleDateFormat(style.toString()).format(date);
             default -> throw new IllegalArgumentException("The enum provided isn't a supported enum!");
         };
     }
