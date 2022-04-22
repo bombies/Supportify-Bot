@@ -257,7 +257,7 @@ public class TicketCommand extends AbstractSlashCommand implements ICommand {
             createCreatorChannel(guild, category, config, description, emoji);
         }
 
-        if (config.getSupportRole(guildID) == -1L) {
+        if (!config.supportRoleIsSet(guildID)) {
             guild.createRole()
                     .setName("Support Staff")
                     .setColor(GeneralUtils.parseColor("#00FFBE"))
