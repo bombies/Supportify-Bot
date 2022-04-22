@@ -86,7 +86,7 @@ public class CloseEvent extends ListenerAdapter {
                 .queue(user -> user.openPrivateChannel().queue(privChannel ->
                         privChannel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Your ticket (" + channel.getName() + ") has been closed by " + closer.getAsMention() + "\n" +
                                 "\nTime Opened: " + GeneralUtils.getDurationString(ticket.getTotalTimeOpened()) + "\n" +
-                                "Messages Sent: " + (ticket.getTotalMessageCount() - 1) + "\n\nYour transcript can be found below.").build())
+                                "Messages Sent: " + (ticket.getTotalMessageCount() - 1) + "\n\nYour transcript can be found above.").build())
                         .addFile(transcript)
                         .queue(success -> transcript.delete()), new ErrorHandler().handle(ErrorResponse.CANNOT_SEND_TO_USER, ignored -> {})));
     }
