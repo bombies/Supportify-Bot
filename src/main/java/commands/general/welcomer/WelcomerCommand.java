@@ -31,6 +31,10 @@ public class WelcomerCommand extends AbstractSlashCommand {
                                                         true
                                                 )
                                         )
+                                ),
+                                SubCommand.of(
+                                        "edit",
+                                        "Edit the welcomer"
                                 )
                         )
                         .build()
