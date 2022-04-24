@@ -37,6 +37,7 @@ public class WelcomerCommand extends AbstractSlashCommand {
                                         "Edit the welcomer"
                                 )
                         )
+                        .checkForPermissions(Permission.ADMINISTRATOR)
                         .build()
         );
     }
