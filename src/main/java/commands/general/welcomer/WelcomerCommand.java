@@ -46,4 +46,21 @@ public class WelcomerCommand extends AbstractSlashCommand {
     public String getHelp() {
         return null;
     }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (!checks(event)) return;
+
+        switch (event.getSubcommandName()) {
+            case "toggle" -> {
+
+            }
+            case "setchannel" -> {
+
+            }
+            case "edit" -> {
+
+            }
+        }
+    }
 }
