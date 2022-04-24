@@ -496,6 +496,11 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
             return this;
         }
 
+        public Builder checkForPermissions(Permission... permissions) {
+            this.permissionCheck = (event) -> event.getMember().hasPermission(permissions);
+            return this;
+        }
+
         public Builder setBotRequiredPermissions(Permission... permissions) {
             botRequiredPermissions.addAll(Arrays.asList(permissions));
             return this;

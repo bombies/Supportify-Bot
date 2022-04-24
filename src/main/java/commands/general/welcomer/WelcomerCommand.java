@@ -1,6 +1,9 @@
 package commands.general.welcomer;
 
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import org.jetbrains.annotations.NotNull;
 import utils.component.interactions.AbstractSlashCommand;
 
 import java.util.List;
