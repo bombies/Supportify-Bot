@@ -69,6 +69,12 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
         return command.botRequiredPermissions;
     }
 
+    public boolean isDevCommand() {
+        if (command == null)
+            buildCommand();
+        return command.isPrivate;
+    }
+
     private SlashCommandData getCommandData() {
         if (command == null)
             buildCommand();
@@ -159,7 +165,17 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
             }
         }
 
-        commandCreateAction.queueAfter(1, TimeUnit.SECONDS, null, new ErrorHandler()
+        if (command.isPrivate) {
+            if (g.getOwnerIdLong() != Config.getOwnerID())
+                return;
+            else commandCreateAction = commandCreateAction.setDefaultEnabled(false);
+        }
+
+        commandCreateAction.queueAfter(1, TimeUnit.SECONDS, createdCommand -> {
+            if (!command.isPrivate) return;
+            createdCommand.updatePrivileges(g, CommandPrivilege.enableUser(Config.getOwnerID()))
+                    .queue();
+        }, new ErrorHandler()
                 .handle(ErrorResponse.MISSING_ACCESS, e -> {}));
     }
 
@@ -312,10 +328,11 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
         @Nullable
         @Getter
         private final Predicate<SlashCommandInteractionEvent> checkPermission;
+        private final boolean isPrivate;
 
         private Command(@NotNull String name, @Nullable String description, @NotNull List<CommandOption> options,
                         @NotNull List<SubCommandGroup> subCommandGroups, @NotNull List<SubCommand> subCommands, @Nullable Predicate<SlashCommandInteractionEvent> checkPermission,
-                        List<net.dv8tion.jda.api.Permission> botRequiredPermissions) {
+                        List<net.dv8tion.jda.api.Permission> botRequiredPermissions, boolean isPrivate) {
             this.name = name.toLowerCase();
             this.description = description;
             this.options = options;
@@ -323,6 +340,7 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
             this.subCommands = subCommands;
             this.checkPermission = checkPermission;
             this.botRequiredPermissions = botRequiredPermissions;
+            this.isPrivate = isPrivate;
         }
 
         public boolean permissionCheck(SlashCommandInteractionEvent e) {
@@ -483,6 +501,12 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
             return this;
         }
 
+        public Builder setDevCommand() {
+            this.isPrivate = true;
+            this.permissionCheck = e -> e.getUser().getIdLong() == Config.getOwnerID();
+            return this;
+        }
+
         @SneakyThrows
         public Command build() {
             if (name == null)
@@ -503,7 +527,8 @@ public abstract class AbstractSlashCommand extends AbstractInteraction {
                     subCommandGroups,
                     subCommands,
                     permissionCheck,
-                    botRequiredPermissions
+                    botRequiredPermissions,
+                    isPrivate
             );
         }
     }

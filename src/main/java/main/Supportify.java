@@ -1,6 +1,8 @@
 package main;
 
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import commands.SlashCommandManager;
+import commands.dev.configurator.TestConfigurator;
 import commands.general.privatevoicechannels.events.PrivateChannelCreatorDeletionEvent;
 import commands.general.privatevoicechannels.events.PrivateChannelCreatorEvents;
 import commands.general.privatevoicechannels.events.PrivateChannelEvents;
@@ -27,6 +29,12 @@ public class Supportify {
 
     @Getter
     private static JDA api;
+    @Getter
+    private static final EventWaiter eventWaiter = new EventWaiter();
+
+    // Configurators
+    @Getter
+    private static final TestConfigurator testConfigurator = new TestConfigurator();
 
     public static void main(String[] args) {
         WebUtils.setUserAgent("Mozilla/Supportify / bombies#4445");
@@ -46,6 +54,7 @@ public class Supportify {
                     .setChunkingFilter(ChunkingFilter.NONE)
                     .setMemberCachePolicy(MemberCachePolicy.VOICE)
                     .addEventListeners(
+                            eventWaiter,
                             new Listener(),
                             new CloseEvent(),
                             new TicketDeletionEvent(),
@@ -56,6 +65,10 @@ public class Supportify {
                             new PrivateChannelCreatorDeletionEvent(),
                             new PrivateChannelEvents(),
                             new PrivateChannelCreatorEvents()
+                    )
+                    // Configurators
+                    .addEventListeners(
+                            testConfigurator
                     )
                     .disableCache(
                             CacheFlag.ACTIVITY,

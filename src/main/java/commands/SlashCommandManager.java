@@ -1,5 +1,6 @@
 package commands;
 
+import commands.dev.configurator.ConfiguratorTestCommand;
 import commands.general.tickets.RenameCommand;
 import commands.general.tickets.TicketCommand;
 import commands.general.tickets.CloseCommand;
@@ -40,7 +41,7 @@ public class SlashCommandManager {
         );
 
         addDevCommands(
-
+                new ConfiguratorTestCommand()
         );
     }
 
