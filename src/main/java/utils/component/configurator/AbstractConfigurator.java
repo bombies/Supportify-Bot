@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -23,12 +24,13 @@ import utils.SupportifyEmbedUtils;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class AbstractConfigurator extends ListenerAdapter {
     private final Logger logger = LoggerFactory.getLogger(AbstractConfigurator.class);
-    private final HashMap<Long, Long> configOwners = new HashMap<>();
+    private final static HashMap<Long, Long> configOwners = new HashMap<>();
 
     @Getter
     private final List<ConfiguratorOption> configuratorOptions;
@@ -76,21 +78,21 @@ public class AbstractConfigurator extends ListenerAdapter {
                 .toList();
     }
 
-    private void addOwner(User owner, Message msg) {
+    protected static void addOwner(User owner, Message msg) {
         configOwners.put(msg.getIdLong(), owner.getIdLong());
     }
 
-    private long getOwner(Message msg) {
+    private static long getOwner(Message msg) {
         if (!configOwners.containsKey(msg.getIdLong()))
             throw new NullPointerException("This message doesn't have a config owner!");
         return configOwners.get(msg.getIdLong());
     }
 
-    private boolean isOwner(User owner, Message msg) {
+    protected static boolean isOwner(User owner, Message msg) {
         return isOwner(owner.getIdLong(), msg.getIdLong());
     }
 
-    private boolean isOwner(long owner, long msg) {
+    protected static boolean isOwner(long owner, long msg) {
         return configOwners.get(msg).equals(owner);
     }
 
@@ -102,24 +104,55 @@ public class AbstractConfigurator extends ListenerAdapter {
                 .orElse(null);
         if (configuratorOption == null) return;
 
-        if (!isOwner(event.getUser(), event.getMessage())) {
-            event.replyEmbeds(SupportifyEmbedUtils.embedMessage("You do not have permission to interact with this button!").build())
-                    .setEphemeral(true)
-                    .queue();
+        try {
+            if (!isOwner(event.getUser(), event.getMessage())) {
+                event.replyEmbeds(SupportifyEmbedUtils.embedMessage("You do not have permission to interact with this button!").build())
+                        .setEphemeral(true)
+                        .queue();
+                return;
+            }
+        } catch (NullPointerException e) {
+            event.editComponents(ActionRow.of(event.getButton().asDisabled())).queue(success ->
+                    success.sendMessageEmbeds(SupportifyEmbedUtils.embedMessage("This button is no longer valid!").build())
+                            .setEphemeral(true)
+                            .queue()
+            );
             return;
         }
 
-        configuratorOption.getEventHandler().apply(event);
+        configuratorOption.getEventHandler().accept(event);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onGenericEvent(@NotNull GenericEvent event) {
-        for (final var option : configuratorOptions) {
-            final var secondaryEventHandlers = option.getSecondaryEventHandlers();
-            if (secondaryEventHandlers.isEmpty())
-                continue;
+        Class clazz = event.getClass();
 
-            secondaryEventHandlers.forEach(handler -> handler.apply(event));
+        while (clazz != null) {
+            for (ConfiguratorOption configuratorOption : configuratorOptions) {
+                final var secondaryEventHandlers = configuratorOption.getSecondaryEventHandlers();
+                if (secondaryEventHandlers.isEmpty())
+                    continue;
+
+                if (!secondaryEventHandlers.containsKey(clazz))
+                    continue;
+
+                Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.get(clazz);
+                ConfiguratorOption.SecondaryEvent[] toExecute = secondaryEvents.toArray(new ConfiguratorOption.SecondaryEvent[secondaryEvents.size()]);
+
+                for (ConfiguratorOption.SecondaryEvent secondaryEvent : toExecute) {
+                    if (event instanceof GenericInteractionCreateEvent)
+                        if (!secondaryEvent.isMatchingComponent(event))
+                            return;
+
+                    if (!secondaryEvent.attempt(event) && event instanceof ButtonInteractionEvent buttonInteractionEvent)
+                        buttonInteractionEvent.replyEmbeds(SupportifyEmbedUtils.embedMessage("You do not have permission to interact wtih this button!").build())
+                                .setEphemeral(true)
+                                .queue();
+                }
+            }
+
+            clazz = clazz.getSuperclass();
         }
     }
 }

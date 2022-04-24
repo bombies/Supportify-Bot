@@ -1,22 +1,20 @@
 package utils.component.configurator;
 
 import lombok.SneakyThrows;
-import main.Supportify;
 import net.dv8tion.jda.api.entities.Emoji;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import utils.component.InvalidBuilderException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class ConfiguratorOptionBuilder {
     private String label, id;
     private Emoji emoji;
-    private Function<ButtonInteractionEvent, Void> eventHandler;
-    private List<Function<GenericEvent, Void>> secondaryEventHandlers = new ArrayList<>();
+    private Consumer<ButtonInteractionEvent> eventHandler;
+    private HashMap<Class<?>, Set<ConfiguratorOption.SecondaryEvent>> secondaryEventHandlers = new HashMap<>();
 
     public ConfiguratorOptionBuilder setLabel(String label) {
         this.label = label;
@@ -33,22 +31,40 @@ public class ConfiguratorOptionBuilder {
         return this;
     }
 
-    public ConfiguratorOptionBuilder setOwner(User owner) {
-        return this;
-    }
-
-    /**
-     * Remember at the end of each handler null is to be returned
-     * @param eventHandler The piece of code to execute when an event is fired
-     * @return This object
-     */
-    public ConfiguratorOptionBuilder setEventHandler(Function<ButtonInteractionEvent, Void> eventHandler) {
+    public ConfiguratorOptionBuilder setButtonEventHandler(Consumer<ButtonInteractionEvent> eventHandler) {
         this.eventHandler = eventHandler;
         return this;
     }
 
-    public ConfiguratorOptionBuilder addSecondaryEventHandler(Function<GenericEvent, Void> eventHandler) {
-        secondaryEventHandlers.add(eventHandler);
+    public <T extends Event> ConfiguratorOptionBuilder addSecondaryEventHandler(Class<T> clazz, Predicate<T> condition, Consumer<T> eventHandler) {
+        ConfiguratorOption.SecondaryEvent<T> secondaryEvent = new ConfiguratorOption.SecondaryEvent<>(condition, eventHandler);
+        Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.computeIfAbsent(clazz, c -> new HashSet<>());
+        secondaryEvents.add(secondaryEvent);
+        return this;
+    }
+
+    @SneakyThrows
+    public <T extends Event> ConfiguratorOptionBuilder addSecondaryEventHandler(Class<T> clazz, Consumer<T> eventHandler) {
+        if (!clazz.equals(ButtonInteractionEvent.class))
+            throw new InvalidBuilderException("The predicate can't be null unless the event is a ButtonInteractionEvent!");
+
+        ConfiguratorOption.SecondaryEvent<T> secondaryEvent = new ConfiguratorOption.SecondaryEvent<>(null, eventHandler);
+        Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.computeIfAbsent(clazz, c -> new HashSet<>());
+        secondaryEvents.add(secondaryEvent);
+        return this;
+    }
+
+    public <T extends Event> ConfiguratorOptionBuilder addSecondaryInteractionEventHandler(Class<T> clazz, Predicate<T> condition, Predicate<T> interactionPredicate, Consumer<T> eventHandler) {
+        ConfiguratorOption.SecondaryEvent<T> secondaryEvent = new ConfiguratorOption.SecondaryEvent<>(condition, interactionPredicate, eventHandler);
+        Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.computeIfAbsent(clazz, c -> new HashSet<>());
+        secondaryEvents.add(secondaryEvent);
+        return this;
+    }
+
+    public <T extends Event> ConfiguratorOptionBuilder addSecondaryInteractionEventHandler(Class<T> clazz, Predicate<T> interactionPredicate, Consumer<T> eventHandler) {
+        ConfiguratorOption.SecondaryEvent<T> secondaryEvent = new ConfiguratorOption.SecondaryEvent<>(null, interactionPredicate, eventHandler);
+        Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.computeIfAbsent(clazz, c -> new HashSet<>());
+        secondaryEvents.add(secondaryEvent);
         return this;
     }
 
