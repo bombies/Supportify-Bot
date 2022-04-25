@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
+import utils.MultiValueMap;
 import utils.SupportifyEmbedUtils;
 
 import java.util.HashMap;
@@ -21,11 +22,11 @@ public class ConfiguratorOption {
     @Getter
     private final Consumer<ButtonInteractionEvent> eventHandler;
     @Getter
-    private final HashMap<Class<?>, Set<SecondaryEvent>> secondaryEventHandlers;
+    private final MultiValueMap<Class<?>, ConfiguratorOption.SecondaryEvent> secondaryEventHandlers;
 
     protected ConfiguratorOption(String id, String label,
                                  Emoji emoji, Consumer<ButtonInteractionEvent> eventHandler,
-                                 HashMap<Class<?>, Set<SecondaryEvent>> secondaryEventHandlers) {
+                                 MultiValueMap<Class<?>, ConfiguratorOption.SecondaryEvent> secondaryEventHandlers) {
         this.id = id;
         this.label = label;
         this.emoji = emoji;

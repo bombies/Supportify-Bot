@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import utils.MultiValueMap;
 import utils.component.InvalidBuilderException;
 
 import java.util.*;
@@ -14,7 +15,7 @@ public class ConfiguratorOptionBuilder {
     private String label, id;
     private Emoji emoji;
     private Consumer<ButtonInteractionEvent> eventHandler;
-    private HashMap<Class<?>, Set<ConfiguratorOption.SecondaryEvent>> secondaryEventHandlers = new HashMap<>();
+    private MultiValueMap<Class<?>, ConfiguratorOption.SecondaryEvent> secondaryEventHandlers = new MultiValueMap<>();
 
     public ConfiguratorOptionBuilder setLabel(String label) {
         this.label = label;
@@ -38,8 +39,7 @@ public class ConfiguratorOptionBuilder {
 
     public <T extends Event> ConfiguratorOptionBuilder addSecondaryEventHandler(Class<T> clazz, Predicate<T> condition, Consumer<T> eventHandler) {
         ConfiguratorOption.SecondaryEvent<T> secondaryEvent = new ConfiguratorOption.SecondaryEvent<>(condition, eventHandler);
-        Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.computeIfAbsent(clazz, c -> new HashSet<>());
-        secondaryEvents.add(secondaryEvent);
+        secondaryEventHandlers.put(clazz, secondaryEvent);
         return this;
     }
 
@@ -49,22 +49,19 @@ public class ConfiguratorOptionBuilder {
             throw new InvalidBuilderException("The predicate can't be null unless the event is a ButtonInteractionEvent!");
 
         ConfiguratorOption.SecondaryEvent<T> secondaryEvent = new ConfiguratorOption.SecondaryEvent<>(null, eventHandler);
-        Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.computeIfAbsent(clazz, c -> new HashSet<>());
-        secondaryEvents.add(secondaryEvent);
+        secondaryEventHandlers.put(clazz, secondaryEvent);
         return this;
     }
 
     public <T extends Event> ConfiguratorOptionBuilder addSecondaryInteractionEventHandler(Class<T> clazz, Predicate<T> condition, Predicate<T> interactionPredicate, Consumer<T> eventHandler) {
         ConfiguratorOption.SecondaryEvent<T> secondaryEvent = new ConfiguratorOption.SecondaryEvent<>(condition, interactionPredicate, eventHandler);
-        Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.computeIfAbsent(clazz, c -> new HashSet<>());
-        secondaryEvents.add(secondaryEvent);
+        secondaryEventHandlers.put(clazz, secondaryEvent);
         return this;
     }
 
     public <T extends Event> ConfiguratorOptionBuilder addSecondaryInteractionEventHandler(Class<T> clazz, Predicate<T> interactionPredicate, Consumer<T> eventHandler) {
         ConfiguratorOption.SecondaryEvent<T> secondaryEvent = new ConfiguratorOption.SecondaryEvent<>(null, interactionPredicate, eventHandler);
-        Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.computeIfAbsent(clazz, c -> new HashSet<>());
-        secondaryEvents.add(secondaryEvent);
+        secondaryEventHandlers.put(clazz, secondaryEvent);
         return this;
     }
 

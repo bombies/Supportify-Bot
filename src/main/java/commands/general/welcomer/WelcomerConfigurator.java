@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
+import utils.GeneralUtils;
 import utils.SupportifyEmbedUtils;
 import utils.component.configurator.AbstractConfigurator;
 import utils.component.configurator.ConfiguratorBuilder;
@@ -19,6 +20,7 @@ import utils.component.configurator.ConfiguratorOptionBuilder;
 import utils.json.welcomer.WelcomerConfig;
 
 import java.awt.*;
+import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
 public class WelcomerConfigurator extends AbstractConfigurator {
@@ -149,34 +151,23 @@ public class WelcomerConfigurator extends AbstractConfigurator {
                                 }))
                         .addSecondaryInteractionEventHandler(
                                 ButtonInteractionEvent.class,
-                                e -> e.getButton().getId().startsWith(BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX),
-                                e -> {
-                                    switch (e.getButton().getId().split(BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX)[1]) {
-                                        case "author" -> e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                e -> e.getButton().getId().equals(BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author"),
+                                e -> e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
                                                 WELCOMER_EMBED_TITLE + " - Edit Embed Author",
                                                 "What about the embed author would you like to edit?"
-                                                ).build())
-                                                .addActionRow(
-                                                        Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:name", "Name", SupportifyEmoji.TITLE.getEmoji()),
-                                                        Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:url", "URL", SupportifyEmoji.INTERNET.getEmoji()),
-                                                        Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:imageurl", "Image URL", SupportifyEmoji.IMAGE.getEmoji())
-                                                )
-                                                .queue(success -> {
-                                                    try {
-                                                        AbstractConfigurator.addOwner(e.getUser(), success.retrieveOriginal().submit().get());
-                                                    } catch (InterruptedException | ExecutionException exc) {
-                                                        exc.printStackTrace();
-                                                    }
-                                                });
-//                                        case "title" -> ;
-//                                        case "thumbnail" -> ;
-//                                        case "description" -> ;
-//                                        case "image" -> ;
-//                                        case "footer" -> ;
-//                                        case "timestamp" -> ;
-//                                        case "colour" -> ;
-                                    }
-                                }
+                                        ).build())
+                                        .addActionRow(
+                                                Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:name", "Name", SupportifyEmoji.TITLE.getEmoji()),
+                                                Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:url", "URL", SupportifyEmoji.INTERNET.getEmoji()),
+                                                Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:imageurl", "Image URL", SupportifyEmoji.IMAGE.getEmoji())
+                                        )
+                                        .queue(success -> {
+                                            try {
+                                                AbstractConfigurator.addOwner(e.getUser(), success.retrieveOriginal().submit().get());
+                                            } catch (InterruptedException | ExecutionException exc) {
+                                                exc.printStackTrace();
+                                            }
+                                        })
                         )
                         .addSecondaryInteractionEventHandler(
                                 ButtonInteractionEvent.class,
@@ -216,7 +207,6 @@ public class WelcomerConfigurator extends AbstractConfigurator {
                                 e -> {
                                     final var config = new WelcomerConfig();
                                     final var guild = e.getGuild();
-                                    System.out.println(e.getModalId());
                                     switch (e.getModalId().split("editembed_author_")[1]) {
                                         case "name" -> {
                                             final var name = e.getValue("author_name").getAsString();
@@ -225,29 +215,77 @@ public class WelcomerConfigurator extends AbstractConfigurator {
                                                     WELCOMER_EMBED_TITLE + " - Edit Embed Author Name",
                                                     "You have set the author name to: " + name
                                             )
-                                                    .setColor(new Color(153, 37, 255))
+                                                    .setColor(new Color(146, 255, 78))
                                                     .build()).queue();
                                         }
                                         case "url" -> {
                                             final var url = e.getValue("author_url").getAsString();
-                                            config.setEmbedAuthorUrl(guild.getIdLong(), url);
-                                            e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
-                                                    WELCOMER_EMBED_TITLE + " - Edit Embed Author URL",
-                                                    "You have set the author URL to: \n" + url
-                                            )
-                                                    .setColor(new Color(153, 37, 255))
-                                                    .build()).queue();
+
+                                            if (!GeneralUtils.isUrl(url)) {
+                                                e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                                        WELCOMER_EMBED_TITLE + " - Edit Embed Author URL",
+                                                                        "That is an invalid URL!"
+                                                                )
+                                                                .setColor(new Color(181, 0, 0))
+                                                                .build())
+                                                        .setEphemeral(true)
+                                                        .queue();
+                                                return;
+                                            }
+
+                                            try {
+                                                config.setEmbedAuthorUrl(guild.getIdLong(), url);
+                                                e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                                WELCOMER_EMBED_TITLE + " - Edit Embed Author URL",
+                                                                "You have set the author URL to: \n" + url
+                                                        )
+                                                        .setColor(new Color(146, 255, 78))
+                                                        .build()).queue();
+                                            } catch (IllegalArgumentException | IllegalStateException exc) {
+                                                e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                        WELCOMER_EMBED_TITLE + " - Edit Embed Author URL",
+                                                        "You must set a name before attempting to set a URL!"
+                                                )
+                                                        .setColor(new Color(181, 0, 0))
+                                                        .build())
+                                                        .setEphemeral(true)
+                                                        .queue();
+                                            }
                                         }
                                         case "imgurl" -> {
                                             final var imgUrl = e.getValue("author_imgurl").getAsString();
-                                            config.setEmbedAuthorImageUrl(guild.getIdLong(), imgUrl);
-                                            e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
-                                                    WELCOMER_EMBED_TITLE + " - Edit Embed Author URL",
-                                                    "You have set the author URL to:"
-                                            )
-                                                    .setImage(imgUrl)
-                                                    .setColor(new Color(153, 37, 255))
-                                                    .build()).queue();
+
+                                            if (!GeneralUtils.isUrl(imgUrl)) {
+                                                e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                                        WELCOMER_EMBED_TITLE + " - Edit Embed Author URL",
+                                                                        "That is an invalid URL!"
+                                                                )
+                                                                .setColor(new Color(181, 0, 0))
+                                                                .build())
+                                                        .setEphemeral(true)
+                                                        .queue();
+                                                return;
+                                            }
+
+                                            try {
+                                                config.setEmbedAuthorImageUrl(guild.getIdLong(), imgUrl);
+                                                e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                                WELCOMER_EMBED_TITLE + " - Edit Embed Author URL",
+                                                                "You have set the author URL to:"
+                                                        )
+                                                        .setImage(imgUrl)
+                                                        .setColor(new Color(146, 255, 78))
+                                                        .build()).queue();
+                                            } catch (IllegalArgumentException | IllegalStateException exc) {
+                                                e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                                        WELCOMER_EMBED_TITLE + " - Edit Embed Author URL",
+                                                                        "You must set a name before attempting to set an image URL!"
+                                                                )
+                                                                .setColor(new Color(181, 0, 0))
+                                                                .build())
+                                                        .setEphemeral(true)
+                                                        .queue();
+                                            }
                                         }
                                     }
                                 }
@@ -261,8 +299,14 @@ public class WelcomerConfigurator extends AbstractConfigurator {
                         .setEmoji(SupportifyEmoji.EYE.getEmoji())
                         .setButtonEventHandler(e -> {
                             final var config = new WelcomerConfig();
-                            e.replyEmbeds(config.getWelcomeEmbed(e.getGuild().getIdLong()).build())
-                                    .queue();
+
+                            try {
+                                e.replyEmbeds(config.getWelcomeEmbed(e.getGuild().getIdLong()).build())
+                                        .queue();
+                            } catch (IllegalStateException exc) {
+                                e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(WELCOMER_EMBED_TITLE + " - Preview Embed", "*The embed is empty*").build())
+                                        .queue();
+                            }
                         })
                         .build()
                 )

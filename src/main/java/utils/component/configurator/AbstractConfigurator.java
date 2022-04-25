@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utils.SupportifyEmbedUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -137,13 +138,12 @@ public class AbstractConfigurator extends ListenerAdapter {
                 if (!secondaryEventHandlers.containsKey(clazz))
                     continue;
 
-                Set<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.get(clazz);
-                ConfiguratorOption.SecondaryEvent[] toExecute = secondaryEvents.toArray(new ConfiguratorOption.SecondaryEvent[secondaryEvents.size()]);
+                List<ConfiguratorOption.SecondaryEvent> secondaryEvents = secondaryEventHandlers.get(clazz);
 
-                for (ConfiguratorOption.SecondaryEvent secondaryEvent : toExecute) {
+                for (ConfiguratorOption.SecondaryEvent secondaryEvent : secondaryEvents) {
                     if (event instanceof GenericInteractionCreateEvent)
                         if (!secondaryEvent.isMatchingComponent(event))
-                            return;
+                            continue;
 
                     if (!secondaryEvent.attempt(event) && event instanceof ButtonInteractionEvent buttonInteractionEvent)
                         buttonInteractionEvent.replyEmbeds(SupportifyEmbedUtils.embedMessage("You do not have permission to interact wtih this button!").build())
