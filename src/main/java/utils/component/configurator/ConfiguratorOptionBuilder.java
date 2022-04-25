@@ -87,7 +87,7 @@ public class ConfiguratorOptionBuilder {
                 label,
                 emoji,
                 eventHandler,
-                this.secondaryEventHandlers
+                secondaryEventHandlers
         );
     }
 }

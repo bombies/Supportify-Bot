@@ -1,10 +1,14 @@
 package commands.general.welcomer;
 
+import main.Supportify;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.jetbrains.annotations.NotNull;
+import utils.SupportifyEmbedUtils;
 import utils.component.interactions.AbstractSlashCommand;
+import utils.json.welcomer.WelcomerConfig;
 
 import java.util.List;
 
@@ -53,14 +57,50 @@ public class WelcomerCommand extends AbstractSlashCommand {
 
         switch (event.getSubcommandName()) {
             case "toggle" -> {
+                final var guild = event.getGuild();
+                final var config = new WelcomerConfig();
 
+                if (!config.channelIsSet(guild.getIdLong())) {
+                    event.replyEmbeds(SupportifyEmbedUtils.embedMessage("The welcomer channel must be set before" +
+                                    " interacting with the toggler!").build())
+                            .setEphemeral(true)
+                            .queue();
+                    return;
+                }
+
+                if (config.isEnabled(guild.getIdLong())) {
+                    config.setEnabled(guild.getIdLong(), false);
+                    event.replyEmbeds(SupportifyEmbedUtils.embedMessage("You have toggled the welcomer **OFF**").build())
+                            .queue();
+                } else {
+                    config.setEnabled(guild.getIdLong(), true);
+                    event.replyEmbeds(SupportifyEmbedUtils.embedMessage("You have toggled the welcomer **ON**").build())
+                            .queue();
+                }
             }
             case "setchannel" -> {
-
+                final var channel = event.getOption("channel").getAsTextChannel();
+                final var config = new WelcomerConfig();
+                config.setChannel(event.getGuild().getIdLong(), channel.getIdLong());
+                event.replyEmbeds(SupportifyEmbedUtils.embedMessage("You have set the welcomer channel to: " + channel.getAsMention())
+                                .build())
+                        .queue();
             }
-            case "edit" -> {
-
-            }
+            case "edit" -> Supportify.getWelcomerConfigurator().sendMessage(event);
         }
+    }
+
+    @Override
+    public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
+        final var config = new WelcomerConfig();
+        final var guild = event.getGuild();
+
+        if (!config.channelIsSet(guild.getIdLong()))
+            return;
+
+        if (!config.isEnabled(guild.getIdLong()))
+            return;
+
+        config.getWelcomer(guild.getIdLong()).sendMessage(event.getUser());
     }
 }

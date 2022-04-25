@@ -7,6 +7,7 @@ import commands.general.privatevoicechannels.events.PrivateChannelCreatorDeletio
 import commands.general.privatevoicechannels.events.PrivateChannelCreatorEvents;
 import commands.general.privatevoicechannels.events.PrivateChannelEvents;
 import commands.general.tickets.events.*;
+import commands.general.welcomer.WelcomerConfigurator;
 import constants.ENV;
 import lombok.Getter;
 import me.duncte123.botcommons.web.WebUtils;
@@ -35,6 +36,8 @@ public class Supportify {
     // Configurators
     @Getter
     private static final TestConfigurator testConfigurator = new TestConfigurator();
+    @Getter
+    private static final WelcomerConfigurator welcomerConfigurator = new WelcomerConfigurator();
 
     public static void main(String[] args) {
         WebUtils.setUserAgent("Mozilla/Supportify / bombies#4445");
@@ -68,7 +71,8 @@ public class Supportify {
                     )
                     // Configurators
                     .addEventListeners(
-                            testConfigurator
+                            testConfigurator,
+                            welcomerConfigurator
                     )
                     .disableCache(
                             CacheFlag.ACTIVITY,

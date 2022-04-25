@@ -4,6 +4,7 @@ import commands.CommandManager;
 import commands.dev.configurator.ConfiguratorTestCommand;
 import commands.general.privatevoicechannels.PrivateChannelCommand;
 import commands.general.tickets.TicketCommand;
+import commands.general.welcomer.WelcomerCommand;
 import commands.misc.PingCommand;
 import commands.utility.UptimeCommand;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -113,7 +114,7 @@ public class Listener extends ListenerAdapter {
     }
 
     public void loadNeededSlashCommands(Guild g) {
-        new ConfiguratorTestCommand().loadCommand(g);
+        new WelcomerCommand().loadCommand(g);
     }
 
     public void unloadCommands(Guild g) {

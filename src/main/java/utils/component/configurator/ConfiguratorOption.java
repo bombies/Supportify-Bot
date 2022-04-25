@@ -70,6 +70,15 @@ public class ConfiguratorOption {
                 }
             }
 
+            if (event instanceof GenericInteractionCreateEvent) {
+                if (componentCondition != null) {
+                    if (componentCondition.test(event)) {
+                        action.accept(event);
+                        return true;
+                    }
+                    return false;
+                } else return true;
+            }
             if (condition.test(event)) {
                 action.accept(event);
                 return true;

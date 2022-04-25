@@ -5,6 +5,7 @@ import commands.general.tickets.RenameCommand;
 import commands.general.tickets.TicketCommand;
 import commands.general.tickets.CloseCommand;
 import commands.general.privatevoicechannels.PrivateChannelCommand;
+import commands.general.welcomer.WelcomerCommand;
 import commands.misc.PingCommand;
 import commands.utility.UptimeCommand;
 import lombok.Getter;
@@ -26,18 +27,19 @@ public class SlashCommandManager {
 
     public SlashCommandManager() {
         addGeneralCommands(
-                new TicketCommand(),
                 new RenameCommand(),
-                new CloseCommand(),
-                new PrivateChannelCommand()
+                new CloseCommand()
         );
 
         addMiscCommands(
-            new PingCommand()
+                new PingCommand()
         );
 
         addUtilityommands(
-            new UptimeCommand()
+                new TicketCommand(),
+                new UptimeCommand(),
+                new PrivateChannelCommand(),
+                new WelcomerCommand()
         );
 
         addDevCommands(

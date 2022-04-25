@@ -103,6 +103,33 @@ public class WelcomerConfig extends AbstractGuildConfig {
         setEmbedInfo(gid, welcomeEmbed.build());
     }
 
+    public void setEmbedAuthorName(long gid, String name) {
+        if (name.length() > 256)
+            throw new IllegalArgumentException("The author name can be no more than 256 characters!");
+
+        EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
+        MessageEmbed embedBuilt = welcomeEmbed.build();
+
+        welcomeEmbed.setAuthor(name, embedBuilt.getAuthor().getUrl(), embedBuilt.getAuthor().getIconUrl());
+        setEmbedInfo(gid, welcomeEmbed.build());
+    }
+
+    public void setEmbedAuthorUrl(long gid, String url) {
+        EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
+        MessageEmbed embedBuilt = welcomeEmbed.build();
+
+        welcomeEmbed.setAuthor(embedBuilt.getAuthor().getName(), url, embedBuilt.getAuthor().getIconUrl());
+        setEmbedInfo(gid, welcomeEmbed.build());
+    }
+
+    public void setEmbedAuthorImageUrl(long gid, String url) {
+        EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
+        MessageEmbed embedBuilt = welcomeEmbed.build();
+
+        welcomeEmbed.setAuthor(embedBuilt.getAuthor().getName(), embedBuilt.getAuthor().getUrl(), url);
+        setEmbedInfo(gid, welcomeEmbed.build());
+    }
+
     public void setEmbedThumbnail(long gid, String thumbnailURL) {
         EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
         welcomeEmbed.setThumbnail(thumbnailURL);
@@ -148,24 +175,51 @@ public class WelcomerConfig extends AbstractGuildConfig {
         setEmbedInfo(gid, welcomeEmbed.build());
     }
 
-    private EmbedBuilder getWelcomeEmbed(long gid) {
+    public EmbedBuilder getWelcomeEmbed(long gid) {
         final var obj = getObject(gid);
         final var embedInfo = obj.getJSONObject(Fields.EMBED_INFO.toString());
         final var authorInfo = embedInfo.getJSONObject(Fields.EmbedInfo.AUTHOR.toString());
         final var fieldsInfo = embedInfo.getJSONArray(Fields.EmbedInfo.FIELDS.toString());
         final var footerInfo = embedInfo.getJSONObject(Fields.EmbedInfo.FOOTER.toString());
 
-        EmbedBuilder embedBuilder = new EmbedBuilder()
-                .setTitle(embedInfo.getString(Fields.EmbedInfo.TITLE.toString()))
-                .setAuthor(
-                        authorInfo.getString(Fields.EmbedInfo.Author.NAME.toString()),
-                        authorInfo.getString(Fields.EmbedInfo.Author.URL.toString()),
-                        authorInfo.getString(Fields.EmbedInfo.Author.IMAGE.toString())
-                )
-                .setThumbnail(embedInfo.getString(Fields.EmbedInfo.THUMBNAIL.toString()))
-                .setImage(embedInfo.getString(Fields.EmbedInfo.IMAGE.toString()))
-                .setColor(embedInfo.getInt(Fields.EmbedInfo.COLOUR.toString()))
-                .setDescription(embedInfo.getString(Fields.EmbedInfo.DESCRIPTION.toString()));
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+
+        final var title = embedInfo.getString(Fields.EmbedInfo.TITLE.toString());
+        if (title != null)
+            if (!title.isEmpty() && title.isBlank())
+                embedBuilder.setTitle(title);
+
+        final var authorName = authorInfo.getString(Fields.EmbedInfo.Author.NAME.toString());
+        if (authorName != null) {
+            if (!authorName.isBlank() && !authorName.isEmpty()) {
+                final var authorURL = authorInfo.getString(Fields.EmbedInfo.Author.URL.toString());
+                final var authorImageURL = authorInfo.getString(Fields.EmbedInfo.Author.IMAGE.toString());
+                embedBuilder.setAuthor(
+                        authorName,
+                        (authorURL != null) ? (!authorURL.isBlank() && !authorURL.isEmpty() ? authorURL : null) : null,
+                        (authorImageURL != null) ? (!authorImageURL.isBlank() && !authorImageURL.isEmpty() ? authorImageURL : null) : null
+                );
+            }
+        }
+
+        final var thumbnail = embedInfo.getString(Fields.EmbedInfo.THUMBNAIL.toString());
+        if (thumbnail != null)
+            if (!thumbnail.isEmpty() && !thumbnail.isBlank())
+                embedBuilder.setThumbnail(thumbnail);
+
+        final var image = embedInfo.getString(Fields.EmbedInfo.IMAGE.toString());
+        if (image != null)
+            if (!image.isEmpty() && !image.isBlank())
+                embedBuilder.setImage(image);
+
+        final var color = embedInfo.getInt(Fields.EmbedInfo.COLOUR.toString());
+        if (color != 0)
+            embedBuilder.setColor(color);
+
+        final var description = embedInfo.getString(Fields.EmbedInfo.DESCRIPTION.toString());
+        if (description != null)
+            if (!description.isEmpty() && !description.isBlank())
+                embedBuilder.setDescription(description);
 
         for (final var field : fieldsInfo) {
             final var fieldObj = (JSONObject) field;
@@ -176,10 +230,16 @@ public class WelcomerConfig extends AbstractGuildConfig {
             );
         }
 
-        embedBuilder.setFooter(
-                footerInfo.getString(Fields.EmbedInfo.Footer.TEXT.toString()),
-                footerInfo.getString(Fields.EmbedInfo.Footer.IMAGE.toString())
-        );
+        final var footerText = footerInfo.getString(Fields.EmbedInfo.Footer.TEXT.toString());
+        if (footerText != null) {
+            if (!footerText.isEmpty() && !footerText.isBlank()) {
+                final var footerImage = footerInfo.getString(Fields.EmbedInfo.Footer.IMAGE.toString());
+                embedBuilder.setFooter(
+                        footerText,
+                        (footerImage != null) ? (!footerImage.isBlank() && !footerImage.isEmpty() ? footerImage : null) : null
+                );
+            }
+        }
 
         if (embedInfo.getBoolean(Fields.EmbedInfo.SHOW_TIMESTAMP.toString()))
             embedBuilder.setTimestamp(Instant.now());
@@ -233,7 +293,7 @@ public class WelcomerConfig extends AbstractGuildConfig {
                         .put(Fields.EmbedInfo.Author.IMAGE.toString(), "")
                         .put(Fields.EmbedInfo.Author.URL.toString(), "")
                 )
-                .put(Fields.EmbedInfo.COLOUR.toString(), "")
+                .put(Fields.EmbedInfo.COLOUR.toString(), 0)
                 .put(Fields.EmbedInfo.DESCRIPTION.toString(), "")
                 .put(Fields.EmbedInfo.FIELDS.toString(), new JSONArray())
                 .put(Fields.EmbedInfo.IMAGE.toString(), "")
