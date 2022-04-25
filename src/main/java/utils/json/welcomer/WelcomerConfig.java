@@ -2,6 +2,7 @@ package utils.json.welcomer;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Role;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,6 +11,7 @@ import utils.json.AbstractGuildConfig;
 
 import java.awt.*;
 import java.time.Instant;
+import java.util.Objects;
 
 public class WelcomerConfig extends AbstractGuildConfig {
 
@@ -29,15 +31,14 @@ public class WelcomerConfig extends AbstractGuildConfig {
         final var obj = getObject(gid);
         final var embedObject = obj.getJSONObject(Fields.EMBED_INFO.toString());
 
-        embedObject.put(Fields.EmbedInfo.TITLE.toString(), embed.getTitle() != null ? embed.getTitle() : "");
+        embedObject.put(Fields.EmbedInfo.TITLE.toString(), embed.getTitle() != null ? embed.getTitle().isBlank() || embed.getTitle().isEmpty() ? null : embed.getTitle() : "");
 
-        if (embed.getAuthor() != null) {
-            embedObject.put(Fields.EmbedInfo.AUTHOR.toString(), new JSONObject()
-                    .put(Fields.EmbedInfo.Author.NAME.toString(), embed.getAuthor().getName())
-                    .put(Fields.EmbedInfo.Author.IMAGE.toString(), embed.getAuthor().getIconUrl() != null ? embed.getAuthor().getIconUrl() : "")
-                    .put(Fields.EmbedInfo.Author.URL.toString(), embed.getAuthor().getUrl() != null ? embed.getAuthor().getUrl() : "")
-            );
-        }
+
+        embedObject.put(Fields.EmbedInfo.AUTHOR.toString(), new JSONObject()
+                .put(Fields.EmbedInfo.Author.NAME.toString(), embed.getAuthor() != null ? embed.getAuthor().getName() : "")
+                .put(Fields.EmbedInfo.Author.IMAGE.toString(), (embed.getAuthor() != null) ? (embed.getAuthor().getIconUrl() != null ? embed.getAuthor().getIconUrl() : "") : "")
+                .put(Fields.EmbedInfo.Author.URL.toString(), (embed.getAuthor() != null) ? (embed.getAuthor().getUrl() != null ? embed.getAuthor().getUrl() : "")  : "")
+        );
 
         embedObject.put(Fields.EmbedInfo.THUMBNAIL.toString(), embed.getThumbnail() != null ? embed.getThumbnail().getUrl() : "");
         embedObject.put(Fields.EmbedInfo.IMAGE.toString(), embed.getImage() != null ? embed.getImage().getUrl() : "");
@@ -84,7 +85,7 @@ public class WelcomerConfig extends AbstractGuildConfig {
             throw new IllegalArgumentException("The title can be no more than 256 characters!");
 
         EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
-        welcomeEmbed.setTitle(title);
+        welcomeEmbed.setTitle(title.isBlank() || title.isEmpty() ? null : title);
         setEmbedInfo(gid, welcomeEmbed.build());
     }
 
@@ -98,11 +99,15 @@ public class WelcomerConfig extends AbstractGuildConfig {
     }
 
     public void setEmbedAuthor(long gid, String name, String url, String imageURL) {
-        if (name.length() > 256)
-            throw new IllegalArgumentException("The author name can be no more than 256 characters!");
+        if (name != null)
+            if (name.length() > 256)
+                throw new IllegalArgumentException("The author name can be no more than 256 characters!");
 
         EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
         welcomeEmbed.setAuthor(name, url, imageURL);
+
+        if (welcomeEmbed.isEmpty())
+            welcomeEmbed.setColor(Role.DEFAULT_COLOR_RAW + 1);
         setEmbedInfo(gid, welcomeEmbed.build());
     }
 
@@ -206,55 +211,41 @@ public class WelcomerConfig extends AbstractGuildConfig {
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
-        try {
-            final var title = embedInfo.getString(Fields.EmbedInfo.TITLE.toString());
-            if (title != null)
-                if (!title.isEmpty() && title.isBlank())
-                    embedBuilder.setTitle(title);
-        } catch (JSONException ignored) {}
+        final var title = embedInfo.getString(Fields.EmbedInfo.TITLE.toString());
+        if (title != null)
+            if (!title.isEmpty() && title.isBlank())
+                embedBuilder.setTitle(title);
 
-        try {
-            final var authorInfo = embedInfo.getJSONObject(Fields.EmbedInfo.AUTHOR.toString());
-            final var authorName = authorInfo.getString(Fields.EmbedInfo.Author.NAME.toString());
-            if (authorName != null) {
-                if (!authorName.isBlank() && !authorName.isEmpty()) {
-                    final var authorURL = authorInfo.getString(Fields.EmbedInfo.Author.URL.toString());
-                    final var authorImageURL = authorInfo.getString(Fields.EmbedInfo.Author.IMAGE.toString());
-                    embedBuilder.setAuthor(
-                            authorName,
-                            (authorURL != null) ? (!authorURL.isBlank() && !authorURL.isEmpty() ? authorURL : null) : null,
-                            (authorImageURL != null) ? (!authorImageURL.isBlank() && !authorImageURL.isEmpty() ? authorImageURL : null) : null
-                    );
-                }
+        final var authorInfo = embedInfo.getJSONObject(Fields.EmbedInfo.AUTHOR.toString());
+        final var authorName = authorInfo.getString(Fields.EmbedInfo.Author.NAME.toString());
+        if (authorName != null) {
+            if (!authorName.isBlank() && !authorName.isEmpty()) {
+                final var authorURL = authorInfo.getString(Fields.EmbedInfo.Author.URL.toString());
+                final var authorImageURL = authorInfo.getString(Fields.EmbedInfo.Author.IMAGE.toString());
+                embedBuilder.setAuthor(
+                        authorName,
+                        (authorURL != null) ? (!authorURL.isBlank() && !authorURL.isEmpty() ? authorURL : null) : null,
+                        (authorImageURL != null) ? (!authorImageURL.isBlank() && !authorImageURL.isEmpty() ? authorImageURL : null) : null
+                );
             }
-        } catch (JSONException ignored) {}
+        }
 
-        try {
-            final var thumbnail = embedInfo.getString(Fields.EmbedInfo.THUMBNAIL.toString());
-            if (thumbnail != null)
-                if (!thumbnail.isEmpty() && !thumbnail.isBlank())
-                    embedBuilder.setThumbnail(thumbnail);
-        } catch (JSONException ignored) {}
+        final var thumbnail = embedInfo.getString(Fields.EmbedInfo.THUMBNAIL.toString());
+        if (thumbnail != null)
+            if (!thumbnail.isEmpty() && !thumbnail.isBlank())
+                embedBuilder.setThumbnail(thumbnail);
 
-        try {
-            final var image = embedInfo.getString(Fields.EmbedInfo.IMAGE.toString());
-            if (image != null)
-                if (!image.isEmpty() && !image.isBlank())
-                    embedBuilder.setImage(image);
-        } catch (JSONException ingored) {}
+        final var image = embedInfo.getString(Fields.EmbedInfo.IMAGE.toString());
+        if (image != null)
+            if (!image.isEmpty() && !image.isBlank())
+                embedBuilder.setImage(image);
 
-        try {
-            final var color = embedInfo.getInt(Fields.EmbedInfo.COLOUR.toString());
-            if (color != 0)
-                embedBuilder.setColor(color);
-        } catch (JSONException ignored) {}
+        final var color = embedInfo.getInt(Fields.EmbedInfo.COLOUR.toString());
+        if (color != 0)
+            embedBuilder.setColor(color);
 
-        try {
-            final var description = embedInfo.getString(Fields.EmbedInfo.DESCRIPTION.toString());
-            if (description != null)
-                if (!description.isEmpty() && !description.isBlank())
-                    embedBuilder.setDescription(description);
-        } catch (JSONException ignored) {}
+        final var description = embedInfo.getString(Fields.EmbedInfo.DESCRIPTION.toString());
+        embedBuilder.setDescription(Objects.requireNonNullElse(description, "null"));
 
         final var fieldsInfo = embedInfo.getJSONArray(Fields.EmbedInfo.FIELDS.toString());
         for (final var field : fieldsInfo) {

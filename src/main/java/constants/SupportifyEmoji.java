@@ -17,7 +17,8 @@ public enum SupportifyEmoji {
     TIMESTAMP(Emoji.fromMarkdown("<:timestamp:967962917528010772>")),
     COLOUR(Emoji.fromMarkdown("<:colour:967963008900927548>")),
     FIELDS(Emoji.fromMarkdown("<:fields:967963477488594994>")),
-    INTERNET(Emoji.fromMarkdown("<:web:967968309108678686>"));
+    INTERNET(Emoji.fromMarkdown("<:web:967968309108678686>")),
+    X(Emoji.fromMarkdown("<:close:913798787691073556>"));
 
     @Getter
     private final Emoji emoji;

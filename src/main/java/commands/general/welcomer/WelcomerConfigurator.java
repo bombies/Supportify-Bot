@@ -120,6 +120,7 @@ public class WelcomerConfigurator extends AbstractConfigurator {
                         .setID(BUTTON_PREFIX + "edit_embed")
                         .setLabel("Edit Embed")
                         .setEmoji(SupportifyEmoji.PENCIL.getEmoji())
+                        // Main Menu
                         .setButtonEventHandler(e ->
                                 e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
                                         WELCOMER_EMBED_TITLE + " - Edit Embed",
@@ -149,26 +150,56 @@ public class WelcomerConfigurator extends AbstractConfigurator {
                                         exc.printStackTrace();
                                     }
                                 }))
+                        // Edit Menu Handler
                         .addSecondaryInteractionEventHandler(
                                 ButtonInteractionEvent.class,
-                                e -> e.getButton().getId().equals(BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author"),
-                                e -> e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
-                                                WELCOMER_EMBED_TITLE + " - Edit Embed Author",
-                                                "What about the embed author would you like to edit?"
-                                        ).build())
-                                        .addActionRow(
-                                                Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:name", "Name", SupportifyEmoji.TITLE.getEmoji()),
-                                                Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:url", "URL", SupportifyEmoji.INTERNET.getEmoji()),
-                                                Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:imageurl", "Image URL", SupportifyEmoji.IMAGE.getEmoji())
-                                        )
-                                        .queue(success -> {
-                                            try {
-                                                AbstractConfigurator.addOwner(e.getUser(), success.retrieveOriginal().submit().get());
-                                            } catch (InterruptedException | ExecutionException exc) {
-                                                exc.printStackTrace();
-                                            }
-                                        })
+                                e -> e.getButton().getId().startsWith(BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX),
+                                e -> {
+                                    switch (e.getButton().getId().split(BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX)[1]) {
+                                        case "author" -> e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                        WELCOMER_EMBED_TITLE + " - Edit Embed Author",
+                                                        "What about the embed author would you like to edit?"
+                                                ).build())
+                                                .addActionRow(
+                                                        Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:name", "Name", SupportifyEmoji.TITLE.getEmoji()),
+                                                        Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:url", "URL", SupportifyEmoji.INTERNET.getEmoji()),
+                                                        Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:imageurl", "Image URL", SupportifyEmoji.IMAGE.getEmoji()),
+                                                        Button.of(ButtonStyle.DANGER, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:remove", "Remove Author", SupportifyEmoji.IMAGE.getEmoji())
+                                                )
+                                                .queue(success -> {
+                                                    try {
+                                                        AbstractConfigurator.addOwner(e.getUser(), success.retrieveOriginal().submit().get());
+                                                    } catch (InterruptedException | ExecutionException exc) {
+                                                        exc.printStackTrace();
+                                                    }
+                                                });
+                                        case "title" -> e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                        WELCOMER_EMBED_TITLE + " - Edit Embed Title",
+                                                        "What about the embed title would you like to edit?"
+                                                ).build())
+                                                .addActionRow(
+                                                        Button.of(ButtonStyle.SECONDARY, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "title:set", "Set Title", SupportifyEmoji.TITLE.getEmoji()),
+                                                        Button.of(ButtonStyle.DANGER, BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "title:remove", "Remove Title", SupportifyEmoji.X.getEmoji())
+                                                )
+                                                .queue(success -> {
+                                                    try {
+                                                        AbstractConfigurator.addOwner(e.getUser(), success.retrieveOriginal().submit().get());
+                                                    } catch (InterruptedException | ExecutionException exc) {
+                                                        exc.printStackTrace();
+                                                    }
+                                                });
+//                                        case 'thumbnail' -> ;
+//                                        case "description" -> ;
+//                                        case "fields" -> ;
+//                                        case "image" -> ;
+//                                        case "footer" -> ;
+//                                        case "timestamp" -> ;
+//                                        case "colour" -> ;
+                                    }
+
+                                }
                         )
+                        // Author Edit Submenu
                         .addSecondaryInteractionEventHandler(
                                 ButtonInteractionEvent.class,
                                 e -> e.getButton().getId().startsWith(BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "author:"),
@@ -198,9 +229,20 @@ public class WelcomerConfigurator extends AbstractConfigurator {
                                                     .build();
                                             e.replyModal(modal).queue();
                                         }
+                                        case "remove" -> {
+                                            final var config = new WelcomerConfig();
+                                            config.setEmbedAuthor(e.getGuild().getIdLong(), null, null, null);
+                                            e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                    WELCOMER_EMBED_TITLE + " - Edit Embed Author",
+                                                    "You have removed the author!"
+                                            )
+                                                    .setColor(new Color(146, 255, 78))
+                                                    .build()).queue();
+                                        }
                                     }
                                 }
                         )
+                        // Author Edit Submenu Input
                         .addSecondaryInteractionEventHandler(
                                 ModalInteractionEvent.class,
                                 e -> e.getModalId().startsWith("editembed_author_"),
@@ -286,6 +328,52 @@ public class WelcomerConfigurator extends AbstractConfigurator {
                                                         .setEphemeral(true)
                                                         .queue();
                                             }
+                                        }
+                                    }
+                                }
+                        )
+                        // Title Edit Submenu
+                        .addSecondaryInteractionEventHandler(
+                                ButtonInteractionEvent.class,
+                                e -> e.getButton().getId().startsWith(BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "title:"),
+                                e -> {
+                                    switch (e.getButton().getId().split(BUTTON_PREFIX + BUTTON_EDIT_EMBED_PREFIX + "title:")[1]) {
+                                        case "set" -> {
+                                            Modal modal = Modal.create("editembed_title_set", "Edit Embed Title")
+                                                    .addActionRow(TextInput.create("title", "What would you like to set the title to?", TextInputStyle.SHORT)
+                                                            .setRequiredRange(1, 256).build()).build();
+                                            e.replyModal(modal).queue();
+                                        }
+                                        case "remove" -> {
+                                            final var config = new WelcomerConfig();
+                                            config.setEmbedTitle(e.getGuild().getIdLong(), "");
+                                            e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                            WELCOMER_EMBED_TITLE + " - Edit Embed Author",
+                                                            "You have removed the author!"
+                                                    )
+                                                    .setColor(new Color(146, 255, 78))
+                                                    .build()).queue();
+                                        }
+                                    }
+                                }
+                        )
+                        // Title Edit Submenu Input
+                        .addSecondaryInteractionEventHandler(
+                                ModalInteractionEvent.class,
+                                e -> e.getModalId().startsWith("editembed_title_"),
+                                e -> {
+                                    switch (e.getModalId().split("editembed_title_")[1]) {
+                                        case "set" -> {
+                                            final var title = e.getValue("title").getAsString();
+                                            final var config = new WelcomerConfig();
+
+                                            config.setEmbedTitle(e.getGuild().getIdLong(), title);
+                                            e.replyEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(
+                                                    WELCOMER_EMBED_TITLE + " - Edit Embed Title",
+                                                    "You have set the embed title to: " + title
+                                            )
+                                                    .setColor(new Color(146, 255, 78))
+                                                    .build()).queue();
                                         }
                                     }
                                 }
