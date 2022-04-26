@@ -3,7 +3,6 @@ package commands.general.welcomer;
 import constants.SupportifyEmoji;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -23,8 +22,6 @@ import utils.component.configurator.ConfiguratorOptionBuilder;
 import utils.json.welcomer.WelcomerConfig;
 
 import java.awt.*;
-import java.net.URL;
-import java.sql.Time;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
