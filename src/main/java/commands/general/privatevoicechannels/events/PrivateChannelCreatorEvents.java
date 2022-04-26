@@ -66,21 +66,21 @@ public class PrivateChannelCreatorEvents extends ListenerAdapter {
                 };
 
                 privateVc.upsertPermissionOverride(target)
-                        .setAllow(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT, Permission.VOICE_MOVE_OTHERS,
+                        .setAllowed(Permission.VIEW_CHANNEL, Permission.VOICE_CONNECT, Permission.VOICE_MOVE_OTHERS,
                                 Permission.VOICE_SPEAK, Permission.VOICE_STREAM, Permission.MANAGE_CHANNEL)
                         .queue(null, new ErrorHandler()
                                 .handle(ErrorResponse.UNKNOWN_CHANNEL, restErrorHandling)
                         );
 
                 privateVc.upsertPermissionOverride(guild.getPublicRole())
-                        .setDeny(Permission.VOICE_CONNECT)
+                        .setDenied(Permission.VOICE_CONNECT)
                         .queue(null, new ErrorHandler()
                                 .handle(ErrorResponse.UNKNOWN_CHANNEL, restErrorHandling)
                         );
 
                 waitingRoom.upsertPermissionOverride(target)
-                        .setAllow(Permission.VIEW_CHANNEL, Permission.VOICE_MOVE_OTHERS)
-                        .setDeny(Permission.VOICE_CONNECT)
+                        .setAllowed(Permission.VIEW_CHANNEL, Permission.VOICE_MOVE_OTHERS)
+                        .setDenied(Permission.VOICE_CONNECT)
                         .queue(null, new ErrorHandler()
                                 .handle(ErrorResponse.UNKNOWN_CHANNEL, restErrorHandling)
                         );

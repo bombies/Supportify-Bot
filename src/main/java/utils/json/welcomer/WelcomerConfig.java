@@ -127,7 +127,7 @@ public class WelcomerConfig extends AbstractGuildConfig {
         EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
         if (!welcomeEmbed.isEmpty()) {
             MessageEmbed embedBuilt = welcomeEmbed.build();
-            welcomeEmbed.setAuthor(name, embedBuilt.getAuthor().getUrl(), embedBuilt.getAuthor().getIconUrl());
+            welcomeEmbed.setAuthor(name, embedBuilt.getAuthor() != null ? embedBuilt.getAuthor().getUrl() : null, embedBuilt.getAuthor() != null ? embedBuilt.getAuthor().getIconUrl() : null);
         } else welcomeEmbed.setAuthor(name);
         setEmbedInfo(gid, welcomeEmbed.build());
     }
@@ -153,6 +153,8 @@ public class WelcomerConfig extends AbstractGuildConfig {
 
         MessageEmbed embedBuilt = welcomeEmbed.build();
 
+        if (embedBuilt.getAuthor() == null)
+            throw new IllegalStateException("The name of the author must be set before setting a URL!");
         if (embedBuilt.getAuthor().getName() == null)
             throw new IllegalStateException("The name of the author must be set before setting an image URL!");
 
@@ -190,9 +192,21 @@ public class WelcomerConfig extends AbstractGuildConfig {
         setEmbedInfo(gid, welcomeEmbed.build());
     }
 
+    public void removeEmbedAllFields(long gid) {
+        EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
+        welcomeEmbed.getFields().clear();
+        setEmbedInfo(gid, welcomeEmbed.build());
+    }
+
     public void setEmbedFooter(long gid, String text, String imageURL) {
         EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
         welcomeEmbed.setFooter(text, imageURL);
+        setEmbedInfo(gid, welcomeEmbed.build());
+    }
+
+    public void setEmbedFooterText(long gid, String text) {
+        EmbedBuilder welcomeEmbed = getWelcomeEmbed(gid);
+        welcomeEmbed.setFooter(text);
         setEmbedInfo(gid, welcomeEmbed.build());
     }
 
@@ -213,7 +227,7 @@ public class WelcomerConfig extends AbstractGuildConfig {
 
         final var title = embedInfo.getString(Fields.EmbedInfo.TITLE.toString());
         if (title != null)
-            if (!title.isEmpty() && title.isBlank())
+            if (!title.isEmpty() && !title.isBlank())
                 embedBuilder.setTitle(title);
 
         final var authorInfo = embedInfo.getJSONObject(Fields.EmbedInfo.AUTHOR.toString());
@@ -245,7 +259,7 @@ public class WelcomerConfig extends AbstractGuildConfig {
             embedBuilder.setColor(color);
 
         final var description = embedInfo.getString(Fields.EmbedInfo.DESCRIPTION.toString());
-        embedBuilder.setDescription(Objects.requireNonNullElse(description, "null"));
+        embedBuilder.setDescription(Objects.requireNonNullElse(description, ""));
 
         final var fieldsInfo = embedInfo.getJSONArray(Fields.EmbedInfo.FIELDS.toString());
         for (final var field : fieldsInfo) {
