@@ -4,10 +4,13 @@ import lombok.Getter;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import utils.GeneralUtils;
 import utils.SupportifyEmbedUtils;
 
+import javax.annotation.Nullable;
 import java.awt.*;
+import java.io.File;
 import java.time.Instant;
 
 public class TicketLogger {
@@ -26,16 +29,26 @@ public class TicketLogger {
     }
 
     public void sendLog(LogType logType, String log) {
+        sendLog(logType, log, null);
+    }
+
+    public void sendLog(LogType logType, String log, @Nullable File file) {
         TextChannel channel = getChannel();
-        if (channel != null)
-            channel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor(
-                    logType.getEmoji().getName() + " " + logType.getName(),
-                    log
-            )
+        if (channel != null) {
+            MessageAction messageAction = channel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor(
+                                    logType.getEmoji().getName() + " " + logType.getName(),
+                                    log
+                            )
                             .setColor(logType.getColor())
                             .setTimestamp(Instant.now())
                             .build()
-            ).queue();
+            );
+
+            if (file != null)
+                messageAction = messageAction.addFile(file);
+
+            messageAction.queue();
+        }
     }
 
     public boolean channelIsSet() {

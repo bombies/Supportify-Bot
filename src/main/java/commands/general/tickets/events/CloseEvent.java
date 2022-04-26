@@ -61,11 +61,8 @@ public class CloseEvent extends ListenerAdapter {
         final var closer = event.getUser();
 
         Ticket ticket = config.getTicket(guild.getIdLong(), channel.getIdLong());
-        new TicketLogger(guild).sendLog(TicketLogger.LogType.TICKET_CLOSE, channel.getName() + " has been closed by " + closer.getAsMention() + "\n" +
-                "\nTime Opened: " + GeneralUtils.getDurationString(ticket.getTotalTimeOpened()) + "\n" +
-                "Messages Sent: " + (ticket.getTotalMessageCount() - 1));
-
         config.closeTicket(guild.getIdLong(), channel.getIdLong());
+
         event.replyEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "This ticket has been closed by: " + closer.getAsMention() + "\n" +
                         "This channel will be deleted in " + CLOSE_DELAY + " seconds...").build())
                 .queue(success -> {
@@ -82,6 +79,15 @@ public class CloseEvent extends ListenerAdapter {
                 });
 
         File transcript = new TranscriptGenerator(ticket).createTranscript();
+
+        new TicketLogger(guild).sendLog(
+                TicketLogger.LogType.TICKET_CLOSE,
+                channel.getName() + " has been closed by " + closer.getAsMention() + "\n" +
+                "\nTime Opened: " + GeneralUtils.getDurationString(ticket.getTotalTimeOpened()) + "\n" +
+                "Messages Sent: " + (ticket.getTotalMessageCount() - 1),
+                transcript
+        );
+
         Supportify.getApi().retrieveUserById(ticket.getOwner())
                 .queue(user -> user.openPrivateChannel().queue(privChannel ->
                         privChannel.sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithAuthor("Tickets", "Your ticket (" + channel.getName() + ") has been closed by " + closer.getAsMention() + "\n" +
