@@ -1,5 +1,6 @@
 package utils.json.welcomer;
 
+import commands.general.welcomer.WelcomerConfigurator;
 import lombok.Getter;
 import main.Supportify;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -33,63 +34,7 @@ public class Welcomer {
     }
 
     public void sendMessage(User user) {
-        channel.sendMessage(user.getAsMention()).setEmbeds(formatEmbed(user)).queue();
-    }
-
-    private MessageEmbed formatEmbed(User user) {
-        final var newEmbed = new EmbedBuilder();
-        if (embed.getTitle() != null)
-            newEmbed.setTitle(doReplacements(user, embed.getTitle()));
-
-        if (embed.getAuthor() != null) {
-            var authorName = embed.getAuthor().getName();
-            if (authorName != null)
-                authorName = doReplacements(user, authorName);
-
-            newEmbed.setAuthor(authorName, embed.getAuthor().getUrl(), embed.getAuthor().getIconUrl());
-        }
-
-        if (embed.getThumbnail() != null)
-            newEmbed.setThumbnail(embed.getThumbnail().getUrl());
-
-        if (embed.getDescription() != null)
-            newEmbed.setDescription(doReplacements(user, embed.getDescription()));
-
-        if (!embed.getFields().isEmpty()) {
-            embed.getFields().forEach(field -> {
-                var value = field.getValue();
-                    if (value != null)
-                        value = doReplacements(user, value);
-                newEmbed.addField(field.getName(), value, field.isInline());
-            });
-        }
-
-        if (embed.getImage() != null)
-            newEmbed.setImage(embed.getImage().getUrl());
-
-        MessageEmbed.Footer footer = embed.getFooter();
-        if (footer != null) {
-            String footerStr = footer.getText();
-            if (footerStr != null)
-                footerStr = doReplacements(user, footerStr);
-            newEmbed.setFooter(footerStr, footer.getIconUrl());
-        }
-
-        if (embed.getTimestamp() != null)
-            newEmbed.setTimestamp(embed.getTimestamp());
-
-        newEmbed.setColor(embed.getColor());
-        return newEmbed.build();
-    }
-
-    private String doReplacements(User user, String string) {
-        return string
-                .replaceAll(Pattern.quote(PlaceHolders.SERVER_NAME.toString()), guild.getName())
-                .replaceAll(Pattern.quote(PlaceHolders.USER_NAME.toString()), user.getName())
-                .replaceAll(Pattern.quote(PlaceHolders.USER_MENTION.toString()), user.getAsMention())
-                .replaceAll(Pattern.quote(PlaceHolders.USER_TAG.toString()), user.getAsTag())
-                .replaceAll(Pattern.quote(PlaceHolders.USER_DISCRIMINATOR.toString()), user.getDiscriminator())
-                .replaceAll(Pattern.quote(PlaceHolders.USER_ID.toString()), user.getId());
+        channel.sendMessage(user.getAsMention()).setEmbeds(WelcomerConfigurator.formatEmbed(guild, user, embed)).queue();
     }
 
     public enum PlaceHolders {

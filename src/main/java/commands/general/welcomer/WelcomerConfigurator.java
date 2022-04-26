@@ -3,7 +3,10 @@ package commands.general.welcomer;
 import constants.SupportifyEmoji;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -1062,7 +1065,7 @@ public class WelcomerConfigurator extends AbstractConfigurator {
 
                             try {
                                 e.deferReply().queue();
-                                e.getHook().sendMessageEmbeds(config.getWelcomeEmbed(e.getGuild().getIdLong()).build())
+                                e.getHook().sendMessageEmbeds(formatEmbed(e.getGuild(), e.getGuild().getSelfMember().getUser(), config.getWelcomeEmbed(e.getGuild().getIdLong()).build()))
                                         .setEphemeral(true)
                                         .queue(null, new ErrorHandler().handle(ErrorResponse.INVALID_FORM_BODY, exc -> {
                                             e.getHook().sendMessageEmbeds(SupportifyEmbedUtils.embedMessageWithTitle(WELCOMER_EMBED_TITLE + " - Preview Embed", "*The embed is empty*").build())
@@ -1088,5 +1091,61 @@ public class WelcomerConfigurator extends AbstractConfigurator {
         if (!welcomer.isEnabled()) return;
 
         welcomer.sendMessage(event.getUser());
+    }
+
+    public static MessageEmbed formatEmbed(Guild guild, User user, MessageEmbed embed) {
+        final var newEmbed = new EmbedBuilder();
+        if (embed.getTitle() != null)
+            newEmbed.setTitle(doReplacements(user, embed.getTitle(), guild));
+
+        if (embed.getAuthor() != null) {
+            var authorName = embed.getAuthor().getName();
+            if (authorName != null)
+                authorName = doReplacements(user, authorName, guild);
+
+            newEmbed.setAuthor(authorName, embed.getAuthor().getUrl(), embed.getAuthor().getIconUrl());
+        }
+
+        if (embed.getThumbnail() != null)
+            newEmbed.setThumbnail(embed.getThumbnail().getUrl());
+
+        if (embed.getDescription() != null)
+            newEmbed.setDescription(doReplacements(user, embed.getDescription(), guild));
+
+        if (!embed.getFields().isEmpty()) {
+            embed.getFields().forEach(field -> {
+                var value = field.getValue();
+                if (value != null)
+                    value = doReplacements(user, value, guild);
+                newEmbed.addField(field.getName(), value, field.isInline());
+            });
+        }
+
+        if (embed.getImage() != null)
+            newEmbed.setImage(embed.getImage().getUrl());
+
+        MessageEmbed.Footer footer = embed.getFooter();
+        if (footer != null) {
+            String footerStr = footer.getText();
+            if (footerStr != null)
+                footerStr = doReplacements(user, footerStr, guild);
+            newEmbed.setFooter(footerStr, footer.getIconUrl());
+        }
+
+        if (embed.getTimestamp() != null)
+            newEmbed.setTimestamp(embed.getTimestamp());
+
+        newEmbed.setColor(embed.getColor());
+        return newEmbed.build();
+    }
+
+    public static String doReplacements(User user, String string, Guild guild) {
+        return string
+                .replaceAll(Pattern.quote(Welcomer.PlaceHolders.SERVER_NAME.toString()), guild.getName())
+                .replaceAll(Pattern.quote(Welcomer.PlaceHolders.USER_NAME.toString()), user.getName())
+                .replaceAll(Pattern.quote(Welcomer.PlaceHolders.USER_MENTION.toString()), user.getAsMention())
+                .replaceAll(Pattern.quote(Welcomer.PlaceHolders.USER_TAG.toString()), user.getAsTag())
+                .replaceAll(Pattern.quote(Welcomer.PlaceHolders.USER_DISCRIMINATOR.toString()), user.getDiscriminator())
+                .replaceAll(Pattern.quote(Welcomer.PlaceHolders.USER_ID.toString()), user.getId());
     }
 }
