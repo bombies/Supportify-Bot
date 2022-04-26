@@ -89,18 +89,4 @@ public class WelcomerCommand extends AbstractSlashCommand {
             case "edit" -> Supportify.getWelcomerConfigurator().sendMessage(event);
         }
     }
-
-    @Override
-    public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
-        final var config = new WelcomerConfig();
-        final var guild = event.getGuild();
-
-        if (!config.channelIsSet(guild.getIdLong()))
-            return;
-
-        if (!config.isEnabled(guild.getIdLong()))
-            return;
-
-        config.getWelcomer(guild.getIdLong()).sendMessage(event.getUser());
-    }
 }

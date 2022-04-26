@@ -4,6 +4,7 @@ import constants.SupportifyEmoji;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.exceptions.ErrorHandler;
@@ -14,11 +15,13 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.requests.ErrorResponse;
+import org.jetbrains.annotations.NotNull;
 import utils.GeneralUtils;
 import utils.SupportifyEmbedUtils;
 import utils.component.configurator.AbstractConfigurator;
 import utils.component.configurator.ConfiguratorBuilder;
 import utils.component.configurator.ConfiguratorOptionBuilder;
+import utils.json.welcomer.Welcomer;
 import utils.json.welcomer.WelcomerConfig;
 
 import java.awt.*;
@@ -1075,5 +1078,15 @@ public class WelcomerConfigurator extends AbstractConfigurator {
                         .build()
                 )
         );
+    }
+
+    @Override
+    public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
+        Welcomer welcomer = new WelcomerConfig().getWelcomer(event.getGuild().getIdLong());
+
+        if (welcomer == null) return;
+        if (!welcomer.isEnabled()) return;
+
+        welcomer.sendMessage(event.getUser());
     }
 }

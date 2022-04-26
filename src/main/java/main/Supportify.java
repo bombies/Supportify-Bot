@@ -50,7 +50,8 @@ public class Supportify {
                             GatewayIntent.GUILD_BANS,
                             GatewayIntent.GUILD_INVITES,
                             GatewayIntent.GUILD_MESSAGES,
-                            GatewayIntent.GUILD_VOICE_STATES
+                            GatewayIntent.GUILD_VOICE_STATES,
+                            GatewayIntent.GUILD_MEMBERS
 
             )
                     .setBulkDeleteSplittingEnabled(false)
